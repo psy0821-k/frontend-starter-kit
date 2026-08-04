@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg-primary: 0 0% 100%;
+  --color-text-primary: 0 0% 0%;
+  --color-border-muted: 0 0% 92%;
+}
+
+[data-theme='dark'] {
+  --color-bg-primary: 0 0% 8%;
+  --color-text-primary: 0 0% 98%;
+  --color-border-muted: 0 0% 20%;
+}
+
+html {
+  @apply bg-[hsl(var(--color-bg-primary))] text-[hsl(var(--color-text-primary))];
+}
