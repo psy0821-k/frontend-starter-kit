@@ -33,14 +33,16 @@ export function StarterKitSummaryModal({ starterKit, onOpenChange }: StarterKitS
           <>
             <DialogHeader>
               <DialogTitle>{starterKit.title}</DialogTitle>
-              <DialogDescription>{starterKit.description}</DialogDescription>
+              <DialogDescription className="text-base leading-relaxed">
+                {starterKit.description}
+              </DialogDescription>
             </DialogHeader>
 
             <PreviewImageCarousel images={starterKit.preview_images} title={starterKit.title} />
 
             <section>
               <h3 className="mb-2 text-sm font-medium">주요 기능</h3>
-              <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+              <ul className="list-inside list-disc space-y-1 text-base leading-relaxed text-muted-foreground">
                 {starterKit.features.map((feature) => (
                   <li key={feature}>{feature}</li>
                 ))}

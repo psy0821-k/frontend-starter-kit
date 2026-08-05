@@ -45,7 +45,7 @@ export function StarterKitCard({ starterKit, onSelect }: StarterKitCardProps) {
             ))}
             {hiddenTagCount > 0 && <Badge variant="outline">+{hiddenTagCount}</Badge>}
           </div>
-          <time dateTime={starterKit.updated_at} className="text-xs text-muted-foreground">
+          <time dateTime={starterKit.updated_at} className="text-sm text-muted-foreground">
             {formatDate(starterKit.updated_at)}
           </time>
         </CardContent>

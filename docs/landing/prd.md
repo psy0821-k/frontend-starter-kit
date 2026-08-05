@@ -77,17 +77,21 @@ page:
 
 ### 디자인 규칙 대비 검증 결과
 
-| 규칙                                           | 기준                                              | 현재 구현                                                                    | 판정                                      |
-| ---------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- | ----------------------------------------- |
-| [accessibility.md](../design/accessibility.md) | 본문 대비 4.5:1 이상                              | shadcn 기본 토큰 사용, 별도 커스텀 색상 없음                                 | 코드상 위반 없음(육안 검증 필요 — 이슈화) |
-| [accessibility.md](../design/accessibility.md) | Keyboard Navigation, Focus State                  | 카드 `button` + `focus-visible:outline`, Dialog 기본 포커스 트랩             | 충족                                      |
-| [accessibility.md](../design/accessibility.md) | 색상만으로 상태 표현 금지                         | 카테고리/태그는 텍스트 병행(Badge 컴포넌트), 색상 단독 사용 없음             | 충족                                      |
-| [accessibility.md](../design/accessibility.md) | 본문 16px 미만 금지                               | 업데이트 날짜(`text-xs`)가 12px 추정                                         | **위반 가능성 — 검증 필요(이슈화)**       |
-| [layout.md](../design/layout.md)               | Bento Grid는 카드 단위, 반응형                    | 1열/2열/3열 그리드 구현                                                      | 충족                                      |
-| [visual-style.md](../design/visual-style.md)   | Glassmorphism 금지                                | 미사용                                                                       | 충족                                      |
-| [visual-style.md](../design/visual-style.md)   | `prefers-reduced-motion` 대응                     | motion_level: none이라 해당 없음                                             | 해당 없음                                 |
-| [color.md](../design/color.md)                 | 라이트/다크 별도 검증(반전 아님)                  | 다크 토큰은 정의되어 있으나 랜딩페이지 화면 단위 육안 검증 기록 없음         | **미검증 — 이슈화**                       |
-| [typography.md](../design/typography.md)       | Content 유형 본문 16px 이상, line-height 1.6 이상 | 제목/설명은 shadcn CardTitle/CardDescription 기본값 사용, line-height 미검증 | **미검증 — 이슈화**                       |
+이슈 #1~#4([issues.md](./issues.md))에서 실측·보정을 완료했다.
+
+| 규칙                                           | 기준                                              | 검증 결과                                                                                                                                               | 판정                         |
+| ---------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| [accessibility.md](../design/accessibility.md) | 본문 대비 4.5:1 이상                              | OKLCH→sRGB 변환 후 실측(라이트/다크 각각). `muted-foreground` on `card`: 라이트 4.73:1, 다크 6.91:1. `card-foreground`·Badge는 14:1 이상                | 충족(#1, #2 완료)            |
+| [accessibility.md](../design/accessibility.md) | Keyboard Navigation, Focus State                  | 카드 `button` + `focus-visible:outline`, Dialog 기본 포커스 트랩, ESC 닫기 브라우저 실측 확인                                                           | 충족                         |
+| [accessibility.md](../design/accessibility.md) | 색상만으로 상태 표현 금지                         | 카테고리/태그는 텍스트 병행(Badge 컴포넌트), 색상 단독 사용 없음                                                                                        | 충족                         |
+| [accessibility.md](../design/accessibility.md) | 본문 16px 미만 금지                               | 업데이트 날짜를 `text-xs`(12px)→`text-sm`(14px, 라벨 허용치)로 조정. 카드 메타데이터는 본문이 아닌 라벨로 분류해 typography.md 14px 예외 적용           | 충족(#3 완료)                |
+| [layout.md](../design/layout.md)               | Bento Grid는 카드 단위, 반응형                    | 1열/2열/3열 그리드 구현, 브라우저 실측 확인                                                                                                             | 충족                         |
+| [visual-style.md](../design/visual-style.md)   | Glassmorphism 금지                                | 미사용                                                                                                                                                  | 충족                         |
+| [visual-style.md](../design/visual-style.md)   | `prefers-reduced-motion` 대응                     | motion_level: none이라 해당 없음                                                                                                                        | 해당 없음                    |
+| [color.md](../design/color.md)                 | 라이트/다크 별도 검증(반전 아님)                  | 브라우저에서 `.dark` 클래스 실렌더링 확인 — 카드/모달/배지 모두 배경과 텍스트 구분 뚜렷                                                                 | 충족(#1 완료)                |
+| [typography.md](../design/typography.md)       | Content 유형 본문 16px 이상, line-height 1.6 이상 | 모달 소개(`DialogDescription`)·주요 기능 리스트는 `text-base leading-relaxed`(16px)로 조정. 카드 `CardDescription`(14px)은 압축 정보 목적의 예외로 유지 | 충족/예외 근거 기록(#4 완료) |
+
+**#4 예외 근거**: `docs/design/component.md`는 Card를 "정보 그룹화 목적"으로 정의하며, spec-fixed.md도 카드를 "한 줄 설명"으로 압축 노출하도록 요구한다. 반면 모달은 사용자가 상세 페이지 이동 여부를 판단하는 실제 읽기 콘텐츠이므로 Content 유형 기준(16px, line-height 1.6)을 그대로 적용했다.
 
 ## Out of Scope
 

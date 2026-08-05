@@ -20,9 +20,9 @@ PRD([prd.md](./prd.md)) "디자인 규칙 적용 > 검증 결과" 섹션에서 �
 
 **Acceptance Criteria**
 
-- [ ] Given `.dark` 클래스가 적용된 상태, When 랜딩페이지에 접속하면, Then 모든 텍스트가 배경과 시각적으로 구분되어 읽힌다(카드 제목/설명/태그/날짜 포함).
-- [ ] Given `.dark` 클래스가 적용된 상태, When 요약 모달을 연다면, Then 모달 배경·텍스트·버튼이 라이트 모드와 동일한 정보 위계로 구분되어 보인다.
-- [ ] Given `.dark` 클래스가 적용된 상태, When 스타터 킷이 0개인 빈 상태를 본다면, Then 빈 상태 아이콘과 텍스트가 배경과 구분되어 보인다.
+- [x] Given `.dark` 클래스가 적용된 상태, When 랜딩페이지에 접속하면, Then 모든 텍스트가 배경과 시각적으로 구분되어 읽힌다(카드 제목/설명/태그/날짜 포함). — 브라우저 실렌더링으로 확인, 별도 보정 불필요
+- [x] Given `.dark` 클래스가 적용된 상태, When 요약 모달을 연다면, Then 모달 배경·텍스트·버튼이 라이트 모드와 동일한 정보 위계로 구분되어 보인다. — 브라우저 실렌더링으로 확인
+- [x] Given `.dark` 클래스가 적용된 상태, When 스타터 킷이 0개인 빈 상태를 본다면, Then 빈 상태 아이콘과 텍스트가 배경과 구분되어 보인다. — 다크 토큰(`muted-foreground` 6.91:1)이 라이트보다 오히려 대비가 높아 문제 없음으로 판단
 
 ---
 
@@ -38,9 +38,9 @@ PRD([prd.md](./prd.md)) "디자인 규칙 적용 > 검증 결과" 섹션에서 �
 
 **Acceptance Criteria**
 
-- [ ] Given 라이트 테마, When 카드의 제목·설명·날짜·Badge 텍스트를 측정하면, Then 모두 4.5:1 이상이다.
-- [ ] Given 다크 테마, When 동일 요소를 측정하면, Then 모두 4.5:1 이상이다.
-- [ ] Given 대비 기준 미달 요소가 발견된 경우, When 토큰 값을 보정하면, Then 재측정 시 4.5:1 이상을 만족한다.
+- [x] Given 라이트 테마, When 카드의 제목·설명·날짜·Badge 텍스트를 측정하면, Then 모두 4.5:1 이상이다. — OKLCH→sRGB 변환 실측: 최저값 `muted-foreground` 4.73:1, 나머지 14:1 이상
+- [x] Given 다크 테마, When 동일 요소를 측정하면, Then 모두 4.5:1 이상이다. — 최저값 `muted-foreground` 6.91:1, 나머지 14:1 이상
+- [x] Given 대비 기준 미달 요소가 발견된 경우, When 토큰 값을 보정하면, Then 재측정 시 4.5:1 이상을 만족한다. — 기준 미달 요소 없어 보정 불필요
 
 ---
 
@@ -56,8 +56,8 @@ PRD([prd.md](./prd.md)) "디자인 규칙 적용 > 검증 결과" 섹션에서 �
 
 **Acceptance Criteria**
 
-- [ ] Given 카드 목록이 렌더링된 상태, When 업데이트 날짜 텍스트 크기를 확인하면, Then `docs/design/typography.md`/`accessibility.md` 기준에 부합하는 크기(라벨 예외 적용 시 14px 이상, 미적용 시 16px 이상)로 표시된다.
-- [ ] Given 텍스트 크기가 조정된 상태, When 카드 그리드를 모바일/태블릿/데스크톱 3단계에서 확인하면, Then 카드 높이 일관성이 유지된다.
+- [x] Given 카드 목록이 렌더링된 상태, When 업데이트 날짜 텍스트 크기를 확인하면, Then `docs/design/typography.md`/`accessibility.md` 기준에 부합하는 크기(라벨 예외 적용 시 14px 이상, 미적용 시 16px 이상)로 표시된다. — 카드 메타데이터를 라벨로 분류해 `text-xs`(12px)→`text-sm`(14px)로 조정
+- [x] Given 텍스트 크기가 조정된 상태, When 카드 그리드를 모바일/태블릿/데스크톱 3단계에서 확인하면, Then 카드 높이 일관성이 유지된다. — 독립된 한 줄(`time` 요소)이라 레이아웃 영향 없음, 브라우저로 확인
 
 ---
 
@@ -72,8 +72,8 @@ PRD([prd.md](./prd.md)) "디자인 규칙 적용 > 검증 결과" 섹션에서 �
 
 **Acceptance Criteria**
 
-- [ ] Given 카드와 모달의 텍스트 요소별 font-size/line-height를 측정한 상태, When `docs/design/typography.md` 기준과 대조하면, Then 각 요소가 기준 충족/예외(근거 포함) 중 하나로 명확히 분류된다.
-- [ ] Given 예외 없이 기준 미달로 분류된 요소가 있는 경우, When 값을 조정하면, Then 모달 레이아웃이 깨지지 않고 재측정 시 기준을 충족한다.
+- [x] Given 카드와 모달의 텍스트 요소별 font-size/line-height를 측정한 상태, When `docs/design/typography.md` 기준과 대조하면, Then 각 요소가 기준 충족/예외(근거 포함) 중 하나로 명확히 분류된다. — 분류 결과는 prd.md "디자인 규칙 대비 검증 결과" 참조
+- [x] Given 예외 없이 기준 미달로 분류된 요소가 있는 경우, When 값을 조정하면, Then 모달 레이아웃이 깨지지 않고 재측정 시 기준을 충족한다. — `DialogDescription`, "주요 기능" 리스트를 `text-base leading-relaxed`로 조정, 브라우저로 레이아웃 확인
 
 ---
 
