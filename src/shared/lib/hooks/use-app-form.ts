@@ -1,6 +1,6 @@
-import { useForm } from 'react-hook-form';
+import { useForm, type FieldValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { ZodType, ZodSchema } from 'zod';
+import type { ZodType } from 'zod';
 
 /**
  * React Hook Form + Zod 공통 래퍼
@@ -10,9 +10,7 @@ import type { ZodType, ZodSchema } from 'zod';
  * const form = useAppForm(loginSchema);
  * // ← zodResolver 자동 적용, onBlur 모드 설정
  */
-export function useAppForm<T extends Record<string, unknown>>(
-  schema: ZodType<T, ZodSchema, unknown>
-) {
+export function useAppForm<T extends FieldValues>(schema: ZodType<T, T>) {
   return useForm<T>({
     resolver: zodResolver(schema),
     mode: 'onBlur',
