@@ -23,7 +23,7 @@ export function StarterKitCard({ starterKit, onSelect }: StarterKitCardProps) {
     <button
       type="button"
       onClick={() => onSelect(starterKit)}
-      className="block w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+      className="block w-full cursor-pointer text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
     >
       <Card>
         <FallbackImage

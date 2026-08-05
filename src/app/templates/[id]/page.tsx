@@ -1,3 +1,5 @@
+import { StarterKitDetailHeading } from '@/features/starter-kit/ui/starter-kit-detail-heading';
+
 interface TemplateDetailPageProps {
   params: Promise<{ id: string }>;
 }
@@ -11,7 +13,7 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-      <h1 className="mb-2 text-2xl font-bold">스타터 킷 상세 페이지</h1>
+      <StarterKitDetailHeading>스타터 킷 상세 페이지</StarterKitDetailHeading>
       <p className="text-muted-foreground">id: {id}</p>
       <p className="mt-4 text-sm text-muted-foreground">상세 페이지는 준비 중입니다.</p>
     </main>
