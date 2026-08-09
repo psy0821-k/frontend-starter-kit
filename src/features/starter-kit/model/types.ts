@@ -14,7 +14,29 @@ export interface StarterKit {
   features: string[];
   tech_stack: string[];
   preview_images: string[];
+  author_id: string;
+  created_at: string;
   updated_at: string;
+  /**
+   * 상세 조회에서만 채워집니다. 목록 조회는 카드 UI가 코드를 쓰지 않으므로
+   * template_files를 조인하지 않습니다(불필요한 페이로드 방지).
+   */
+  files?: TemplateFile[];
+}
+
+/**
+ * 템플릿을 구성하는 파일 하나.
+ *
+ * file_path는 'src/features/auth/ui/login-form.tsx'처럼 폴더 경로와 파일명을
+ * 합친 전체 경로를 담습니다. 두 필드로 쪼개지 않는 이유는 항상 붙여 쓰고 따로
+ * 조회할 일이 없어 조합·검증 코드만 늘어나기 때문입니다. 파일명이 필요하면
+ * 마지막 세그먼트를 파생해 사용합니다.
+ */
+export interface TemplateFile {
+  file_path: string;
+  code: string;
+  language: string;
+  sort_order: number;
 }
 
 /**

@@ -19,6 +19,13 @@ export function StarterKitCard({ starterKit, onSelect }: StarterKitCardProps) {
   const visibleTags = starterKit.tags.slice(0, MAX_VISIBLE_TAGS);
   const hiddenTagCount = starterKit.tags.length - visibleTags.length;
 
+  // 카드는 스캔용이라 날짜를 하나만 보여준다. 다만 라벨이 없으면 등록일인지
+  // 수정일인지 알 수 없으므로, 수정된 적이 있을 때만 '수정'으로 명시한다.
+  // 상세 페이지(StarterKitMetaDates)와 동일하게 날짜 단위로 비교한다.
+  const formattedCreatedAt = formatDate(starterKit.created_at);
+  const formattedUpdatedAt = formatDate(starterKit.updated_at);
+  const isUpdated = formattedCreatedAt !== formattedUpdatedAt;
+
   return (
     <button
       type="button"
@@ -45,9 +52,12 @@ export function StarterKitCard({ starterKit, onSelect }: StarterKitCardProps) {
             ))}
             {hiddenTagCount > 0 && <Badge variant="outline">+{hiddenTagCount}</Badge>}
           </div>
-          <time dateTime={starterKit.updated_at} className="text-sm text-muted-foreground">
-            {formatDate(starterKit.updated_at)}
-          </time>
+          <p className="text-sm text-muted-foreground">
+            {isUpdated ? '수정' : '등록'}{' '}
+            <time dateTime={isUpdated ? starterKit.updated_at : starterKit.created_at}>
+              {isUpdated ? formattedUpdatedAt : formattedCreatedAt}
+            </time>
+          </p>
         </CardContent>
       </Card>
     </button>
