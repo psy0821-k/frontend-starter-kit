@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiClient } from '@/shared/api/client';
 import { ApiError } from '@/shared/api/error';
 import { useDebouncedValue } from '@/shared/lib/hooks/use-debounced-value';
+import type { ApiResponse } from '@/types/api';
 
 const NICKNAME_CHECK_DEBOUNCE_MS = 500;
 
@@ -29,10 +30,12 @@ export function useNicknameAvailability(nickname: string): NicknameAvailabilityS
     setStatus('checking');
 
     apiClient
-      .post<CheckNicknameResponse>('/api/auth/check-nickname', { nickname: debouncedNickname })
+      .post<ApiResponse<CheckNicknameResponse>>('/api/auth/check-nickname', {
+        nickname: debouncedNickname,
+      })
       .then((result) => {
         if (!isCancelled) {
-          setStatus(result.available ? 'available' : 'unavailable');
+          setStatus(result.data?.available ? 'available' : 'unavailable');
         }
       })
       .catch((error: unknown) => {

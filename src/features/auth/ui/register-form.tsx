@@ -28,10 +28,6 @@ const NICKNAME_AVAILABILITY_MESSAGE: Record<
 /**
  * 이메일 회원가입 폼.
  * mode: 'onChange'로 비밀번호 조건·비밀번호 확인 일치 여부를 타이핑 중 즉시 검증한다.
- *
- * 실제 Supabase 프로젝트가 아직 연결되지 않아, 제출 로직(BFF 호출)은 완성해두되
- * handleFormSubmit에서 e.preventDefault()로 실제 네트워크 요청 직전에 막아둔다.
- * Supabase 연결(MCP) 이후 이 가드만 제거하면 된다.
  */
 export function RegisterForm() {
   const router = useRouter();
@@ -78,16 +74,7 @@ export function RegisterForm() {
     }
   };
 
-  const handleFormSubmit = form.handleSubmit((values) => {
-    // Supabase 프로젝트가 아직 연결되지 않아 실제 네트워크 요청은 막아둔다.
-    // 연결(MCP) 이후에는 아래 guard만 제거하면 submitRegister가 그대로 동작한다.
-    const isSupabaseConnected = false;
-    if (!isSupabaseConnected) {
-      return;
-    }
-
-    return submitRegister(values);
-  });
+  const handleFormSubmit = form.handleSubmit((values) => submitRegister(values));
 
   return (
     <form

@@ -1,5 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr';
-import { env } from '@/shared/config/env';
+import { getSupabaseCredentials } from './config';
 
 /**
  * 브라우저용 Supabase 클라이언트.
@@ -7,5 +7,6 @@ import { env } from '@/shared/config/env';
  * Supabase 표준 패턴에만 사용한다. 그 외 가입/조회 등은 BFF(Route Handler)를 거친다.
  */
 export function createSupabaseBrowserClient() {
-  return createBrowserClient(env.NEXT_PUBLIC_SUPABASE_URL, env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const { url, anonKey } = getSupabaseCredentials();
+  return createBrowserClient(url, anonKey);
 }
