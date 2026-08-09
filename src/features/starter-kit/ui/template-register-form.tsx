@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { ApiError } from '@/shared/api/error';
 import { useAppForm } from '@/shared/lib/hooks/use-app-form';
 import { createTemplate } from '../api/create-template';
 import { toCreateTemplateInput } from '../lib/to-create-input';
+import { uploadTemplateThumbnail } from '../lib/upload-thumbnail';
 import { templateFormSchema, type TemplateFormValues } from '../model/schema';
 import { STARTER_KIT_CATEGORIES } from '../model/types';
 import { TemplateFileFieldArray } from './template-file-field-array';
@@ -55,6 +56,30 @@ export function TemplateRegisterForm() {
   } = form;
 
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [thumbnailError, setThumbnailError] = useState<string | null>(null);
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
+  const [thumbnailFileName, setThumbnailFileName] = useState<string | null>(null);
+
+  const thumbnailUrl = form.watch('thumbnail_url');
+
+  const handleThumbnailChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    setThumbnailError(null);
+    setIsUploadingThumbnail(true);
+
+    try {
+      const url = await uploadTemplateThumbnail(file);
+      form.setValue('thumbnail_url', url, { shouldValidate: true, shouldDirty: true });
+      setThumbnailFileName(file.name);
+    } catch (error) {
+      setThumbnailError(error instanceof ApiError ? error.message : '썸네일 업로드에 실패했습니다');
+    } finally {
+      setIsUploadingThumbnail(false);
+    }
+  };
 
   const submitTemplate = async (values: TemplateFormValues) => {
     setSubmitError(null);
@@ -160,18 +185,31 @@ export function TemplateRegisterForm() {
 
       <FormField
         id="thumbnail_url"
-        label="썸네일 경로"
-        error={errors.thumbnail_url?.message}
-        description="/로 시작하는 경로 또는 http(s):// URL"
+        label="썸네일"
+        error={errors.thumbnail_url?.message ?? thumbnailError ?? undefined}
+        description="PNG, JPEG, WebP / 5MB 이하"
         required
       >
         {(accessibilityProps) => (
-          <Input
-            {...accessibilityProps}
-            placeholder="/mock/starter-kits/saas-starter.png"
-            autoComplete="off"
-            {...register('thumbnail_url')}
-          />
+          <div className="flex flex-col gap-2">
+            <input
+              {...accessibilityProps}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              disabled={isUploadingThumbnail}
+              onChange={(event) => void handleThumbnailChange(event)}
+              className="text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-sm file:font-medium"
+            />
+            {isUploadingThumbnail && <p className="text-xs text-muted-foreground">업로드 중...</p>}
+            {!isUploadingThumbnail && thumbnailUrl && (
+              <p className="text-xs text-muted-foreground">
+                업로드됨: {thumbnailFileName ?? thumbnailUrl}
+              </p>
+            )}
+            {/* 실제 제출 값은 파일이 아니라 업로드 후 반환된 URL이다. 폼 검증 대상으로
+                유지하되 사용자가 직접 입력하지 않도록 화면에서는 숨긴다. */}
+            <input type="hidden" {...register('thumbnail_url')} />
+          </div>
         )}
       </FormField>
 
