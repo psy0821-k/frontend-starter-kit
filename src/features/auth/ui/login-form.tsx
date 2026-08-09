@@ -16,10 +16,6 @@ import { loginSchema, type LoginFormValues } from '@/features/auth/model/schema'
  * 이메일 로그인 폼.
  * mode를 생략해 기존 useAppForm 기본값(onBlur)을 그대로 사용한다 — 로그인은
  * 이미 정해진 값을 입력하는 행위라 회원가입과 달리 타이핑 중 실시간 피드백이 불필요하다.
- *
- * 실제 Supabase 프로젝트가 아직 연결되지 않아, 제출 로직(BFF 호출)은 완성해두되
- * handleFormSubmit에서 e.preventDefault()로 실제 네트워크 요청 직전에 막아둔다.
- * Supabase 연결(MCP) 이후 이 가드만 제거하면 된다.
  */
 export function LoginForm() {
   const router = useRouter();
@@ -39,6 +35,7 @@ export function LoginForm() {
     try {
       await apiClient.post('/api/auth/login', values);
       router.push('/');
+      router.refresh();
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.code === 'EMAIL_NOT_VERIFIED') {
@@ -52,16 +49,7 @@ export function LoginForm() {
     }
   };
 
-  const handleFormSubmit = form.handleSubmit((values) => {
-    // Supabase 프로젝트가 아직 연결되지 않아 실제 네트워크 요청은 막아둔다.
-    // 연결(MCP) 이후에는 아래 guard만 제거하면 submitLogin이 그대로 동작한다.
-    const isSupabaseConnected = false;
-    if (!isSupabaseConnected) {
-      return;
-    }
-
-    return submitLogin(values);
-  });
+  const handleFormSubmit = form.handleSubmit((values) => submitLogin(values));
 
   return (
     <form
