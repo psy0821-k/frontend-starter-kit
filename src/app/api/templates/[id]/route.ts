@@ -4,8 +4,10 @@ import { requireAdmin } from '@/shared/api/auth/require-admin';
 import { toErrorResponse } from '@/shared/api/response';
 import { ApiError } from '@/shared/api/error';
 import { createTemplateSchema } from '@/features/starter-kit/model/schema';
+import { getThumbnailStoragePath } from '@/features/starter-kit/lib/get-thumbnail-storage-path';
 
 const UNIQUE_VIOLATION_CODE = '23505';
+const THUMBNAIL_BUCKET = 'template-thumbnails';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -58,7 +60,12 @@ export async function PUT(request: Request, context: RouteContext) {
 
 /**
  * 템플릿 삭제.
+ *
  * template_files는 on delete cascade로 함께 삭제되므로 RPC가 필요 없습니다.
+ * 썸네일이 Storage에 업로드되어 있다면 templates 행 삭제 전에 함께 정리합니다
+ * (docs/templates/feature/delete/prd.md 결정 2 참조). Storage 삭제가 실패해도
+ * "템플릿이 삭제되었다"가 사용자에게 보장해야 할 핵심이므로 무시하고 계속
+ * 진행합니다 — 고아 파일이 남는 것은 별도 정리 작업으로 다룰 수 있는 비용입니다.
  */
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
@@ -66,6 +73,19 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     const { id } = await context.params;
     const supabase = await createSupabaseServerClient();
+
+    const { data: template } = await supabase
+      .from('templates')
+      .select('thumbnail_url')
+      .eq('id', id)
+      .maybeSingle<{ thumbnail_url: string }>();
+
+    if (template) {
+      const storagePath = getThumbnailStoragePath(template.thumbnail_url);
+      if (storagePath) {
+        await supabase.storage.from(THUMBNAIL_BUCKET).remove([storagePath]);
+      }
+    }
 
     // select()를 붙여야 삭제된 행이 반환되어 대상 존재 여부를 판별할 수 있다.
     const { data, error } = await supabase.from('templates').delete().eq('id', id).select('id');

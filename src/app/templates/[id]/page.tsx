@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { requireAdmin } from '@/shared/api/auth/require-admin';
 import { getStarterKitById } from '@/features/starter-kit/api/get-starter-kit-by-id';
+import { DeleteTemplateDialog } from '@/features/starter-kit/ui/delete-template-dialog';
 import { PreviewImageCarousel } from '@/features/starter-kit/ui/preview-image-carousel';
 import { StarterKitCodeViewer } from '@/features/starter-kit/ui/starter-kit-code-viewer';
 import { StarterKitDetailHeading } from '@/features/starter-kit/ui/starter-kit-detail-heading';
@@ -47,12 +48,15 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
             ))}
           </div>
           {isAdmin && (
-            <Link
-              href={`/templates/${starterKit.id}/edit`}
-              className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            >
-              수정
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/templates/${starterKit.id}/edit`}
+                className={buttonVariants({ variant: 'outline', size: 'sm' })}
+              >
+                수정
+              </Link>
+              <DeleteTemplateDialog templateId={starterKit.id} templateTitle={starterKit.title} />
+            </div>
           )}
         </div>
         <StarterKitDetailHeading>{starterKit.title}</StarterKitDetailHeading>
