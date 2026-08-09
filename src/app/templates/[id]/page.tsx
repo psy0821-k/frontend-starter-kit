@@ -1,10 +1,22 @@
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
+import { buttonVariants } from '@/components/ui/button';
+import { requireAdmin } from '@/shared/api/auth/require-admin';
 import { getStarterKitById } from '@/features/starter-kit/api/get-starter-kit-by-id';
 import { PreviewImageCarousel } from '@/features/starter-kit/ui/preview-image-carousel';
 import { StarterKitCodeViewer } from '@/features/starter-kit/ui/starter-kit-code-viewer';
 import { StarterKitDetailHeading } from '@/features/starter-kit/ui/starter-kit-detail-heading';
 import { StarterKitMetaDates } from '@/features/starter-kit/ui/starter-kit-meta-dates';
+
+async function checkIsAdmin(): Promise<boolean> {
+  try {
+    await requireAdmin();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 interface TemplateDetailPageProps {
   params: Promise<{ id: string }>;
@@ -16,7 +28,7 @@ interface TemplateDetailPageProps {
  */
 export default async function TemplateDetailPage({ params }: TemplateDetailPageProps) {
   const { id } = await params;
-  const starterKit = await getStarterKitById(id);
+  const [starterKit, isAdmin] = await Promise.all([getStarterKitById(id), checkIsAdmin()]);
 
   if (starterKit === null) {
     notFound();
@@ -25,13 +37,23 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-8 flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="secondary">{starterKit.category}</Badge>
-          {starterKit.tags.map((tag) => (
-            <Badge key={tag} variant="outline">
-              {tag}
-            </Badge>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge variant="secondary">{starterKit.category}</Badge>
+            {starterKit.tags.map((tag) => (
+              <Badge key={tag} variant="outline">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+          {isAdmin && (
+            <Link
+              href={`/templates/${starterKit.id}/edit`}
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              수정
+            </Link>
+          )}
         </div>
         <StarterKitDetailHeading>{starterKit.title}</StarterKitDetailHeading>
         <p className="text-lg text-muted-foreground">{starterKit.summary}</p>
