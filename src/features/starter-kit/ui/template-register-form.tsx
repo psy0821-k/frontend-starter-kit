@@ -38,7 +38,7 @@ export function TemplateRegisterForm() {
     defaultValues: {
       title: '',
       summary: '',
-      category: 'Frontend',
+      category: 'erp',
       description: '',
       thumbnail_url: '',
       tags: '',

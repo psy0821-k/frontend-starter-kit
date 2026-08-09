@@ -33,7 +33,7 @@ create table if not exists public.templates (
   id             uuid primary key default gen_random_uuid(),
   title          text not null check (char_length(title) between 1 and 100),
   summary        text not null check (char_length(summary) <= 200),
-  category       text not null check (category in ('Frontend', 'Backend', 'Fullstack', 'Mobile')),
+  category       text not null check (category in ('erp', '포트폴리오', '쇼핑몰')),
   tags           text[] not null default '{}',
   thumbnail_url  text not null,
   description    text not null,

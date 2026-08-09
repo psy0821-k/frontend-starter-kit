@@ -43,6 +43,6 @@ export interface TemplateFile {
  * 카테고리 목록(순서 = 랜딩페이지 섹션 노출 순서).
  * Supabase 카테고리 테이블 연동 전까지는 코드 상수로 고정 관리합니다.
  */
-export const STARTER_KIT_CATEGORIES = ['Frontend', 'Backend', 'Fullstack', 'Mobile'] as const;
+export const STARTER_KIT_CATEGORIES = ['erp', '포트폴리오', '쇼핑몰'] as const;
 
 export type StarterKitCategory = (typeof STARTER_KIT_CATEGORIES)[number];
