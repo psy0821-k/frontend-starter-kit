@@ -30,6 +30,7 @@ export function toCreateTemplateInput(values: TemplateFormValues): CreateTemplat
         // 입력한 순서를 그대로 표시 순서로 쓴다. 파일 경로 알파벳순은
         // "보여주고 싶은 순서"(진입점 먼저)와 다르기 때문이다.
         sort_order: index,
+        is_entry: file.is_entry,
       };
     }),
   };

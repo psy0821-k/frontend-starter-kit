@@ -29,7 +29,7 @@ export async function getStarterKitById(id: string): Promise<StarterKit | null> 
 
   const { data, error } = await supabase
     .from('templates')
-    .select('*, template_files(file_path, code, language, sort_order)')
+    .select('*, template_files(file_path, code, language, sort_order, is_entry)')
     .eq('id', id)
     .maybeSingle<TemplateRow>();
 

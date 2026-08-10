@@ -16,7 +16,7 @@ const EMPTY_DEFAULT_VALUES: TemplateFormValues = {
   features: '',
   tech_stack: '',
   preview_images: '',
-  files: [{ file_path: '', code: '' }],
+  files: [{ file_path: '', code: '', is_entry: false }],
 };
 
 /**

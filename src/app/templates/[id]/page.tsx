@@ -9,6 +9,7 @@ import { PreviewImageCarousel } from '@/features/starter-kit/ui/preview-image-ca
 import { StarterKitCodeViewer } from '@/features/starter-kit/ui/starter-kit-code-viewer';
 import { StarterKitDetailHeading } from '@/features/starter-kit/ui/starter-kit-detail-heading';
 import { StarterKitMetaDates } from '@/features/starter-kit/ui/starter-kit-meta-dates';
+import { TemplateLivePreview } from '@/features/starter-kit/ui/template-live-preview';
 
 async function checkIsAdmin(): Promise<boolean> {
   try {
@@ -72,6 +73,8 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
           </div>
         </section>
       )}
+
+      <TemplateLivePreview files={starterKit.files ?? []} />
 
       <section className="mb-10">
         <h2 className="mb-3 text-xl font-semibold">소개</h2>

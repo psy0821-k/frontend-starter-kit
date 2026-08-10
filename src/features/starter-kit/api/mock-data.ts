@@ -13,9 +13,30 @@ const MOCK_AUTHOR_ID = '00000000-0000-0000-0000-000000000000';
  */
 const MOCK_TEMPLATE_FILES: TemplateFile[] = [
   {
+    file_path: 'src/features/auth/ui/login-page-preview.tsx',
+    language: 'tsx',
+    sort_order: 0,
+    is_entry: true,
+    code: `export default function LoginPagePreview() {
+  return (
+    <div style={{ maxWidth: 320, margin: '40px auto', fontFamily: 'sans-serif' }}>
+      <h1 style={{ fontSize: 20, marginBottom: 16 }}>로그인</h1>
+      <input placeholder="이메일" style={{ display: 'block', width: '100%', marginBottom: 8 }} />
+      <input
+        placeholder="비밀번호"
+        type="password"
+        style={{ display: 'block', width: '100%', marginBottom: 16 }}
+      />
+      <button style={{ width: '100%' }}>로그인</button>
+    </div>
+  );
+}
+`,
+  },
+  {
     file_path: 'src/features/auth/model/schema.ts',
     language: 'typescript',
-    sort_order: 0,
+    sort_order: 1,
     code: `import { z } from 'zod';
 
 export const loginSchema = z.object({
@@ -29,7 +50,7 @@ export type LoginFormValues = z.infer<typeof loginSchema>;
   {
     file_path: 'src/features/auth/ui/login-form.tsx',
     language: 'tsx',
-    sort_order: 1,
+    sort_order: 2,
     code: `'use client';
 
 import { useAppForm } from '@/shared/lib/hooks/use-app-form';
@@ -54,7 +75,7 @@ export function LoginForm() {
   {
     file_path: 'src/app/api/auth/login/route.ts',
     language: 'typescript',
-    sort_order: 2,
+    sort_order: 3,
     code: `import { NextResponse } from 'next/server';
 import { loginSchema } from '@/features/auth/model/schema';
 

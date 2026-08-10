@@ -30,12 +30,20 @@ export const filePathSchema = z
   .refine((value) => !value.startsWith('/'), '/로 시작하지 않는 상대 경로를 입력해주세요')
   .refine((value) => !value.includes('\\'), '경로 구분자는 /를 사용해주세요');
 
+/**
+ * 라이브 미리보기(Sandpack)는 React(tsx/jsx) 엔트리만 지원한다.
+ * 그 외 확장자를 엔트리로 지정하면 번들링이 원리적으로 성립하지 않으므로
+ * 폼 단계에서 막는다.
+ */
+const ENTRY_FILE_EXTENSIONS = ['.tsx', '.jsx'];
+
 export const templateFileSchema = z.object({
   file_path: filePathSchema,
   code: z
     .string()
     .min(1, '코드를 입력해주세요')
     .max(CODE_MAX_LENGTH, `코드는 ${CODE_MAX_LENGTH.toLocaleString()}자 이하여야 합니다`),
+  is_entry: z.boolean(),
 });
 
 /**
@@ -94,6 +102,29 @@ export const templateFormSchema = z.object({
           path: [index, 'file_path'],
         });
       });
+
+      // 엔트리 파일은 템플릿당 최대 1개이며, tsx/jsx만 지정할 수 있다.
+      files.forEach((file, index) => {
+        if (!file.is_entry) return;
+
+        const path = file.file_path.trim();
+        if (path && !ENTRY_FILE_EXTENSIONS.some((ext) => path.endsWith(ext))) {
+          ctx.addIssue({
+            code: 'custom',
+            message: '엔트리 파일은 .tsx 또는 .jsx여야 합니다',
+            path: [index, 'is_entry'],
+          });
+        }
+      });
+
+      const entryCount = files.filter((file) => file.is_entry).length;
+      if (entryCount > 1) {
+        ctx.addIssue({
+          code: 'custom',
+          message: '엔트리 파일은 1개만 지정할 수 있습니다',
+          path: ['files'],
+        });
+      }
     }),
 });
 

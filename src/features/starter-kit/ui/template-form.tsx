@@ -280,7 +280,12 @@ export function TemplateForm({
         )}
       </FormField>
 
-      <TemplateFileFieldArray control={control} register={register} errors={errors} />
+      <TemplateFileFieldArray
+        control={control}
+        register={register}
+        errors={errors}
+        setValue={form.setValue}
+      />
 
       <Button type="submit" disabled={isSubmitting} className="self-start">
         {isSubmitting ? submittingLabel : submitLabel}

@@ -25,6 +25,10 @@ export function toTemplateFormValues(starterKit: StarterKit): TemplateFormValues
     files: (starterKit.files ?? [])
       .slice()
       .sort((a, b) => a.sort_order - b.sort_order)
-      .map((file) => ({ file_path: file.file_path, code: file.code })),
+      .map((file) => ({
+        file_path: file.file_path,
+        code: file.code,
+        is_entry: file.is_entry ?? false,
+      })),
   };
 }

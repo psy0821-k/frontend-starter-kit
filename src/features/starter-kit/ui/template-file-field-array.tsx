@@ -2,9 +2,11 @@
 
 import {
   useFieldArray,
+  useWatch,
   type Control,
   type FieldErrors,
   type UseFormRegister,
+  type UseFormSetValue,
 } from 'react-hook-form';
 import { PlusIcon, Trash2Icon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,6 +19,7 @@ interface TemplateFileFieldArrayProps {
   control: Control<TemplateFormValues>;
   register: UseFormRegister<TemplateFormValues>;
   errors: FieldErrors<TemplateFormValues>;
+  setValue: UseFormSetValue<TemplateFormValues>;
 }
 
 /**
@@ -26,11 +29,28 @@ interface TemplateFileFieldArrayProps {
  * 받습니다. 입력 순서가 그대로 표시 순서(sort_order)가 됩니다 — 파일 경로
  * 알파벳순은 "보여주고 싶은 순서"(진입점 먼저)와 다르기 때문입니다.
  */
-export function TemplateFileFieldArray({ control, register, errors }: TemplateFileFieldArrayProps) {
+export function TemplateFileFieldArray({
+  control,
+  register,
+  errors,
+  setValue,
+}: TemplateFileFieldArrayProps) {
   const { fields, append, remove } = useFieldArray({ control, name: 'files' });
+  const entryFlags = useWatch({ control, name: 'files' })?.map((file) => file.is_entry) ?? [];
+  const hasEntry = entryFlags.some(Boolean);
 
   // 배열 자체에 걸린 에러(최소 1개, 최대 개수)는 개별 행이 아니라 여기에 표시한다.
   const filesError = typeof errors.files?.message === 'string' ? errors.files.message : undefined;
+
+  // 엔트리 파일은 템플릿당 1개로 제한한다(model/schema.ts superRefine과 대칭) —
+  // 하나를 체크하면 나머지 행의 체크를 라디오처럼 자동으로 해제한다.
+  const handleEntryChange = (index: number, checked: boolean) => {
+    fields.forEach((_, otherIndex) => {
+      setValue(`files.${otherIndex}.is_entry`, otherIndex === index && checked, {
+        shouldDirty: true,
+      });
+    });
+  };
 
   return (
     <fieldset className="flex flex-col gap-4">
@@ -88,6 +108,20 @@ export function TemplateFileFieldArray({ control, register, errors }: TemplateFi
                 <CodeTextarea {...accessibilityProps} {...register(`files.${index}.code`)} />
               )}
             </FormField>
+
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={entryFlags[index] ?? false}
+                onChange={(event) => handleEntryChange(index, event.target.checked)}
+              />
+              엔트리 파일로 사용 (라이브 미리보기 렌더링 시작점, .tsx/.jsx만 가능)
+            </label>
+            {fileErrors?.is_entry?.message && (
+              <p role="alert" className="text-xs text-destructive">
+                {fileErrors.is_entry.message}
+              </p>
+            )}
           </div>
         );
       })}
@@ -98,11 +132,17 @@ export function TemplateFileFieldArray({ control, register, errors }: TemplateFi
         </p>
       )}
 
+      {!hasEntry && (
+        <p className="text-xs text-muted-foreground">
+          엔트리 파일이 지정되지 않았습니다. 상세 페이지에 라이브 미리보기가 표시되지 않습니다.
+        </p>
+      )}
+
       {/* type="button"이 없으면 클릭 시 폼이 제출된다. */}
       <Button
         type="button"
         variant="outline"
-        onClick={() => append({ file_path: '', code: '' })}
+        onClick={() => append({ file_path: '', code: '', is_entry: false })}
         className="gap-1.5 self-start"
       >
         <PlusIcon aria-hidden />

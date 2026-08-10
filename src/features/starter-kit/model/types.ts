@@ -37,6 +37,12 @@ export interface TemplateFile {
   code: string;
   language: string;
   sort_order: number;
+  /**
+   * 라이브 미리보기(Sandpack)가 렌더링을 시작하는 엔트리 파일 여부.
+   * 템플릿당 최대 1개만 true일 수 있습니다(DB 부분 유니크 인덱스로 강제).
+   * 과거 데이터 호환을 위해 optional이며, 없으면 false로 취급합니다.
+   */
+  is_entry?: boolean;
 }
 
 /**
