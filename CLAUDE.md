@@ -17,32 +17,34 @@ Frontend Starter Platform — 포트폴리오/실무 프론트엔드 프로젝�
 
 ## 기술 스택
 
-| 영역        | 선택                                                | 상태                                                           |
-| ----------- | --------------------------------------------------- | -------------------------------------------------------------- |
-| 프레임워크  | Next.js 15 (App Router)                             | 적용됨                                                         |
-| 언어        | TypeScript                                          | 적용됨                                                         |
-| 스타일      | Tailwind CSS 4                                      | 적용됨                                                         |
-| UI 컴포넌트 | shadcn/ui (코드 소유 방식, 원본 직접 수정 금지)     | 적용됨                                                         |
-| UI 상태     | Zustand (서버 상태는 담지 않음)                     | 적용됨                                                         |
-| 폼          | React Hook Form + Zod                               | 적용됨                                                         |
-| 린트/훅     | ESLint + Prettier + Husky + lint-staged             | 적용됨                                                         |
-| 서버 상태   | TanStack Query v5                                   | 미설치, 계획 확정                                              |
-| 테스트      | Vitest(유닛) + Playwright(E2E) + vitest-axe(접근성) | 적용됨 (Vitest + @testing-library, setupFiles로 jest-dom 등록) |
+| 영역        | 선택                                                | 상태                                            |
+| ----------- | --------------------------------------------------- | ----------------------------------------------- |
+| 프레임워크  | Next.js 15 (App Router)                             | 적용됨                                          |
+| 언어        | TypeScript                                          | 적용됨                                          |
+| 스타일      | Tailwind CSS 4                                      | 적용됨                                          |
+| UI 컴포넌트 | shadcn/ui (코드 소유 방식, 원본 직접 수정 금지)     | 적용됨                                          |
+| UI 상태     | Zustand (서버 상태는 담지 않음)                     | 적용됨                                          |
+| 폼          | React Hook Form + Zod                               | 적용됨                                          |
+| 린트/훅     | ESLint + Prettier + Husky + lint-staged             | 적용됨                                          |
+| 서버 상태   | TanStack Query v5                                   | 미설치, 계획 확정                               |
+| 테스트      | Vitest(유닛) + Playwright(E2E) + vitest-axe(접근성) | 적용됨 (Vitest + @testing-library + Playwright) |
 
 **의도적으로 제외**: Redux(과설계), Storybook(1인 개발 비용 — `*.example.tsx`/데모 페이지 또는 대표 구현 참조로 대체), MSW(Route Handler 목업으로 대체), CSS-in-JS.
 
 ## 자주 사용하는 명령어
 
-| 명령어               | 용도                          |
-| -------------------- | ----------------------------- |
-| `npm run dev`        | 개발 서버 실행                |
-| `npm run build`      | 프로덕션 빌드                 |
-| `npm run lint`       | ESLint 검사 (경고 0개 강제)   |
-| `npm run lint:fix`   | ESLint 자동 수정              |
-| `npm run format`     | Prettier로 `src/**` 포맷팅    |
-| `npm run type-check` | `tsc --noEmit` 타입 검사      |
-| `npm run test`       | Vitest 유닛 테스트 1회 실행   |
-| `npm run test:watch` | Vitest 유닛 테스트 watch mode |
+| 명령어                | 용도                          |
+| --------------------- | ----------------------------- |
+| `npm run dev`         | 개발 서버 실행                |
+| `npm run build`       | 프로덕션 빌드                 |
+| `npm run lint`        | ESLint 검사 (경고 0개 강제)   |
+| `npm run lint:fix`    | ESLint 자동 수정              |
+| `npm run format`      | Prettier로 `src/**` 포맷팅    |
+| `npm run type-check`  | `tsc --noEmit` 타입 검사      |
+| `npm run test`        | Vitest 유닛 테스트 1회 실행   |
+| `npm run test:watch`  | Vitest 유닛 테스트 watch mode |
+| `npm run test:e2e`    | Playwright E2E 테스트 실행    |
+| `npm run test:e2e:ui` | Playwright E2E 테스트 UI 모드 |
 
 커밋 시 Husky + lint-staged가 `eslint --fix` / `prettier --write`를 자동 실행한다.
 
