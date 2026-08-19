@@ -17,17 +17,17 @@ Frontend Starter Platform — 포트폴리오/실무 프론트엔드 프로젝�
 
 ## 기술 스택
 
-| 영역        | 선택                                                | 상태                                            |
-| ----------- | --------------------------------------------------- | ----------------------------------------------- |
-| 프레임워크  | Next.js 15 (App Router)                             | 적용됨                                          |
-| 언어        | TypeScript                                          | 적용됨                                          |
-| 스타일      | Tailwind CSS 4                                      | 적용됨                                          |
-| UI 컴포넌트 | shadcn/ui (코드 소유 방식, 원본 직접 수정 금지)     | 적용됨                                          |
-| UI 상태     | Zustand (서버 상태는 담지 않음)                     | 적용됨                                          |
-| 폼          | React Hook Form + Zod                               | 적용됨                                          |
-| 린트/훅     | ESLint + Prettier + Husky + lint-staged             | 적용됨                                          |
-| 서버 상태   | TanStack Query v5                                   | 미설치, 계획 확정                               |
-| 테스트      | Vitest(유닛) + Playwright(E2E) + vitest-axe(접근성) | 적용됨 (Vitest + @testing-library + Playwright) |
+| 영역        | 선택                                            | 상태                                                                                                                                       |
+| ----------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 프레임워크  | Next.js 15 (App Router)                         | 적용됨                                                                                                                                     |
+| 언어        | TypeScript                                      | 적용됨                                                                                                                                     |
+| 스타일      | Tailwind CSS 4                                  | 적용됨                                                                                                                                     |
+| UI 컴포넌트 | shadcn/ui (코드 소유 방식, 원본 직접 수정 금지) | 적용됨                                                                                                                                     |
+| UI 상태     | Zustand (서버 상태는 담지 않음)                 | 적용됨                                                                                                                                     |
+| 폼          | React Hook Form + Zod                           | 적용됨                                                                                                                                     |
+| 린트/훅     | ESLint + Prettier + Husky + lint-staged         | 적용됨                                                                                                                                     |
+| 서버 상태   | TanStack Query v5                               | 미설치, 계획 확정                                                                                                                          |
+| 테스트      | Vitest(유닛) + Playwright(E2E)                  | 적용됨 (vitest-axe 미도입, 접근성 검증은 Playwright E2E의 실제 렌더링 색상 기반 대비비 계산으로 수행 — `src/shared/lib/contrast-ratio.ts`) |
 
 **의도적으로 제외**: Redux(과설계), Storybook(1인 개발 비용 — `*.example.tsx`/데모 페이지 또는 대표 구현 참조로 대체), MSW(Route Handler 목업으로 대체), CSS-in-JS.
 
