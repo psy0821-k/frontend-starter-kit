@@ -42,3 +42,52 @@ test.describe('/templates — 목록 페이지', () => {
     expect(lang).toBe('ko');
   });
 });
+
+test.describe('/templates — 카테고리 필터', () => {
+  test('?category= 쿼리로 직접 접속하면 초기 렌더부터 해당 카테고리가 선택된 상태로 표시된다', async ({
+    page,
+  }) => {
+    await page.goto('/templates?category=erp');
+    await page.waitForLoadState('networkidle');
+
+    const cards = page.locator('button[type="button"]');
+    expect(await cards.count()).toBeGreaterThan(0);
+
+    const categoryFilter = page.getByRole('group', { name: '카테고리 필터' });
+    await expect(categoryFilter.getByRole('button', { name: 'erp', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  test('새로고침 후에도 카테고리 필터가 유지된다', async ({ page }) => {
+    await page.goto('/templates?category=erp');
+    await page.waitForLoadState('networkidle');
+
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+
+    const categoryFilter = page.getByRole('group', { name: '카테고리 필터' });
+    await expect(categoryFilter.getByRole('button', { name: 'erp', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+
+  test('뒤로가기 시 이전 필터 상태로 돌아간다', async ({ page }) => {
+    await page.goto('/templates');
+    await page.waitForLoadState('networkidle');
+
+    const categoryFilter = page.getByRole('group', { name: '카테고리 필터' });
+    await categoryFilter.getByRole('button', { name: 'erp', exact: true }).click();
+    await page.waitForURL(/category=erp/);
+
+    await page.goBack();
+    await page.waitForURL('**/templates');
+
+    await expect(categoryFilter.getByRole('button', { name: 'All', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+  });
+});
