@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
 import { requireAdmin } from '@/shared/api/auth/require-admin';
+import { getCurrentUser } from '@/shared/api/auth/get-current-user';
 import { getStarterKitById } from '@/features/starter-kit/api/get-starter-kit-by-id';
 import { DeleteTemplateDialog } from '@/features/starter-kit/ui/delete-template-dialog';
 import { PreviewImageCarousel } from '@/features/starter-kit/ui/preview-image-carousel';
@@ -10,6 +11,8 @@ import { StarterKitCodeViewer } from '@/features/starter-kit/ui/starter-kit-code
 import { StarterKitDetailHeading } from '@/features/starter-kit/ui/starter-kit-detail-heading';
 import { StarterKitMetaDates } from '@/features/starter-kit/ui/starter-kit-meta-dates';
 import { TemplateLivePreview } from '@/features/starter-kit/ui/template-live-preview';
+import { BookmarkButton } from '@/features/bookmark/ui/bookmark-button';
+import { getBookmarkStateForServer } from '@/features/bookmark/api/get-bookmark-state-for-server';
 
 async function checkIsAdmin(): Promise<boolean> {
   try {
@@ -30,11 +33,18 @@ interface TemplateDetailPageProps {
  */
 export default async function TemplateDetailPage({ params }: TemplateDetailPageProps) {
   const { id } = await params;
-  const [starterKit, isAdmin] = await Promise.all([getStarterKitById(id), checkIsAdmin()]);
+  const [starterKit, isAdmin, currentUser] = await Promise.all([
+    getStarterKitById(id),
+    checkIsAdmin(),
+    getCurrentUser(),
+  ]);
 
   if (starterKit === null) {
     notFound();
   }
+
+  const bookmarkTarget = { targetType: 'template' as const, targetId: starterKit.id };
+  const bookmarkState = await getBookmarkStateForServer(bookmarkTarget, currentUser?.id ?? null);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
@@ -48,17 +58,24 @@ export default async function TemplateDetailPage({ params }: TemplateDetailPageP
               </Badge>
             ))}
           </div>
-          {isAdmin && (
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/templates/${starterKit.id}/edit`}
-                className={buttonVariants({ variant: 'outline', size: 'sm' })}
-              >
-                수정
-              </Link>
-              <DeleteTemplateDialog templateId={starterKit.id} templateTitle={starterKit.title} />
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <BookmarkButton
+              target={bookmarkTarget}
+              initialData={bookmarkState}
+              isAuthenticated={currentUser !== null}
+            />
+            {isAdmin && (
+              <>
+                <Link
+                  href={`/templates/${starterKit.id}/edit`}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  수정
+                </Link>
+                <DeleteTemplateDialog templateId={starterKit.id} templateTitle={starterKit.title} />
+              </>
+            )}
+          </div>
         </div>
         <StarterKitDetailHeading>{starterKit.title}</StarterKitDetailHeading>
         <p className="text-lg text-muted-foreground">{starterKit.summary}</p>

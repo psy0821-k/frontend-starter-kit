@@ -3,7 +3,9 @@ import { ThemeProvider } from 'next-themes';
 import './globals.css';
 import { Geist } from 'next/font/google';
 import { cn } from '@/shared/lib/cn';
+import { Toaster } from '@/components/ui/sonner';
 import Header from './_components/header';
+import { QueryProvider } from './query-provider';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -17,8 +19,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko" suppressHydrationWarning className={cn('font-sans', geist.variable)}>
       <body>
         <ThemeProvider attribute="class" defaultTheme="light">
-          <Header />
-          <div className="pt-14">{children}</div>
+          <QueryProvider>
+            <Header />
+            <div className="pt-14">{children}</div>
+            <Toaster />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>
