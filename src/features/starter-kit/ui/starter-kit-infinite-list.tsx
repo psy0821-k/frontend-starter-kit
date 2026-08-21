@@ -61,13 +61,18 @@ export function StarterKitInfiniteList({
     setIsLoadingMore(true);
     setStatusMessage('추가 스타터 킷을 불러오는 중입니다');
 
-    setVisibleCount((current) => {
-      const next = Math.min(current + PAGE_SIZE, filteredKits.length);
-      const addedCount = next - current;
-      setStatusMessage(`${addedCount}개의 스타터 킷을 추가로 불러왔습니다`);
-      setIsLoadingMore(false);
-      return next;
-    });
+    // 시작 안내가 별도 렌더 사이클로 커밋된 뒤 완료 안내로 갱신되도록 tick을 분리한다.
+    // 같은 이벤트 핸들러 안에서 곧바로 완료 문구까지 setState하면 배치 처리되어
+    // 시작 문구가 스크린리더에 전달되지 않는다.
+    setTimeout(() => {
+      setVisibleCount((current) => {
+        const next = Math.min(current + PAGE_SIZE, filteredKits.length);
+        const addedCount = next - current;
+        setStatusMessage(`${addedCount}개의 스타터 킷을 추가로 불러왔습니다`);
+        setIsLoadingMore(false);
+        return next;
+      });
+    }, 0);
   };
 
   useInfiniteScroll({ sentinelRef, onIntersect: handleIntersect, enabled: hasMore });
