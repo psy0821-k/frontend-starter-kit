@@ -3,7 +3,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '@/shared/api/error';
-import { removeBookmark } from '@/features/bookmark/api/bookmark-client';
+import { removeMyBookmark } from '../api/remove-my-bookmark';
 import { MyBookmarkList } from './my-bookmark-list';
 import type { MyBookmarkItem } from '../api/get-my-bookmarks';
 
@@ -13,17 +13,18 @@ vi.mock('sonner', () => ({
   toast: { error: (...args: unknown[]) => toastError(...args) },
 }));
 
-vi.mock('@/features/bookmark/api/bookmark-client', () => ({
-  removeBookmark: vi.fn(),
+vi.mock('../api/remove-my-bookmark', () => ({
+  removeMyBookmark: vi.fn(),
 }));
 
-const mockedRemoveBookmark = vi.mocked(removeBookmark);
+const mockedRemoveMyBookmark = vi.mocked(removeMyBookmark);
 
 const items: MyBookmarkItem[] = [
   {
     targetType: 'template',
     targetId: 't-1',
     title: '템플릿 하나',
+    thumbnailUrl: 'https://example.com/thumb.png',
     createdAt: '2026-08-22T00:00:00.000Z',
   },
   {
@@ -40,26 +41,40 @@ afterEach(() => {
 });
 
 describe('MyBookmarkList', () => {
-  it('should render each item with its type badge label ("템플릿" for template, "기능" for feature) and title', () => {
+  it('should render items grouped under "템플릿" and "기능" section headings', () => {
     render(<MyBookmarkList items={items} />);
 
-    expect(screen.getByText('템플릿')).toBeInTheDocument();
-    expect(screen.getByText('기능')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '템플릿' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '기능' })).toBeInTheDocument();
     expect(screen.getByText('템플릿 하나')).toBeInTheDocument();
     expect(screen.getByText('기능 하나')).toBeInTheDocument();
   });
 
-  it("should call removeBookmark with the item's targetType and targetId and remove the item from the list when its delete button is clicked", async () => {
+  it('should render a thumbnail image for a template item with thumbnailUrl but not for a feature item', () => {
+    render(<MyBookmarkList items={items} />);
+
+    expect(screen.getByRole('img', { name: '템플릿 하나 썸네일' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: '기능 하나 썸네일' })).not.toBeInTheDocument();
+  });
+
+  it('should not render the "기능" section heading when there are no feature items', () => {
+    render(<MyBookmarkList items={[items[0]]} />);
+
+    expect(screen.getByRole('heading', { name: '템플릿' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: '기능' })).not.toBeInTheDocument();
+  });
+
+  it("should call removeMyBookmark with the item's targetType and targetId and remove the item from the list when its bookmark toggle icon is clicked", async () => {
     const user = userEvent.setup();
-    mockedRemoveBookmark.mockResolvedValue({ isBookmarked: false, count: 0 });
+    mockedRemoveMyBookmark.mockResolvedValue(undefined);
 
     render(<MyBookmarkList items={items} />);
 
-    const deleteButtons = screen.getAllByRole('button');
-    await user.click(deleteButtons[0]);
+    const toggleButtons = screen.getAllByRole('button', { name: '북마크 해제' });
+    await user.click(toggleButtons[0]);
 
     await waitFor(() =>
-      expect(mockedRemoveBookmark).toHaveBeenCalledWith({
+      expect(mockedRemoveMyBookmark).toHaveBeenCalledWith({
         targetType: 'template',
         targetId: 't-1',
       })
@@ -74,23 +89,23 @@ describe('MyBookmarkList', () => {
     expect(screen.getByText('아직 북마크한 항목이 없습니다')).toBeInTheDocument();
   });
 
-  it('should keep the item in the list and show an error toast when removeBookmark rejects with an ApiError', async () => {
+  it('should keep the item in the list and show an error toast when removeMyBookmark rejects with an ApiError', async () => {
     const user = userEvent.setup();
-    mockedRemoveBookmark.mockRejectedValue(new ApiError(500, 'INTERNAL_ERROR', '삭제 실패'));
+    mockedRemoveMyBookmark.mockRejectedValue(new ApiError(500, 'INTERNAL_ERROR', '삭제 실패'));
 
     render(<MyBookmarkList items={items} />);
 
-    const deleteButtons = screen.getAllByRole('button');
-    await user.click(deleteButtons[0]);
+    const toggleButtons = screen.getAllByRole('button', { name: '북마크 해제' });
+    await user.click(toggleButtons[0]);
 
     await waitFor(() => expect(toastError).toHaveBeenCalledTimes(1));
     expect(screen.getByText('템플릿 하나')).toBeInTheDocument();
   });
 
-  it("should disable only the clicked item's delete button while its removeBookmark call is pending, leaving other items' buttons enabled", async () => {
+  it("should disable only the clicked item's bookmark toggle icon while its removeMyBookmark call is pending, leaving other items' toggles enabled", async () => {
     const user = userEvent.setup();
-    let resolveRemove: (value: { isBookmarked: boolean; count: number }) => void = () => {};
-    mockedRemoveBookmark.mockImplementation(
+    let resolveRemove: () => void = () => {};
+    mockedRemoveMyBookmark.mockImplementation(
       () =>
         new Promise((resolve) => {
           resolveRemove = resolve;
@@ -99,13 +114,13 @@ describe('MyBookmarkList', () => {
 
     render(<MyBookmarkList items={items} />);
 
-    const deleteButtons = screen.getAllByRole('button');
-    await user.click(deleteButtons[0]);
+    const toggleButtons = screen.getAllByRole('button', { name: '북마크 해제' });
+    await user.click(toggleButtons[0]);
 
-    await waitFor(() => expect(deleteButtons[0]).toBeDisabled());
-    expect(deleteButtons[1]).toBeEnabled();
+    await waitFor(() => expect(toggleButtons[0]).toBeDisabled());
+    expect(toggleButtons[1]).toBeEnabled();
 
-    resolveRemove({ isBookmarked: false, count: 0 });
+    resolveRemove();
     await waitFor(() => expect(screen.queryByText('템플릿 하나')).not.toBeInTheDocument());
   });
 });

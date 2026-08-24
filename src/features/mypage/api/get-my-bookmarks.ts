@@ -1,16 +1,19 @@
 import { createSupabaseServerClient } from '@/shared/api/supabase/server';
 import { isSupabaseConfigured } from '@/shared/api/supabase/config';
-import type { BookmarkTargetType } from '@/features/bookmark/model/types';
+
+export type MyBookmarkTargetType = 'template' | 'feature';
 
 export interface MyBookmarkItem {
-  targetType: 'template' | 'feature';
+  targetType: MyBookmarkTargetType;
   targetId: string;
   title: string;
+  /** template만 존재. templates.thumbnail_url. feature는 이미지 컬럼이 없어 항상 undefined. */
+  thumbnailUrl?: string;
   createdAt: string; // bookmarks.created_at, ISO 문자열
 }
 
 interface BookmarkRow {
-  target_type: BookmarkTargetType;
+  target_type: MyBookmarkTargetType;
   target_id: string;
   created_at: string;
 }
@@ -18,31 +21,42 @@ interface BookmarkRow {
 interface TitleRow {
   id: string;
   title: string;
+  thumbnail_url?: string;
 }
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
+interface TitleInfo {
+  title: string;
+  thumbnailUrl?: string;
+}
+
 /**
- * targetType별 테이블(templates/features)에서 제목을 조회해 titleByTypeAndId에 채운다.
+ * targetType별 테이블(templates/features)에서 제목·썸네일을 조회해 infoByTypeAndId에 채운다.
+ * features 테이블은 thumbnail_url 컬럼이 없으므로 select 문자열을 테이블에 맞게 분기한다.
  * ids가 비어있으면 조회를 건너뛴다.
  */
 async function fillTitles(
   supabase: SupabaseServerClient,
   table: 'templates' | 'features',
-  targetType: BookmarkTargetType,
+  targetType: MyBookmarkTargetType,
   ids: string[],
-  titleByTypeAndId: Map<string, string>
+  infoByTypeAndId: Map<string, TitleInfo>
 ): Promise<void> {
   if (ids.length === 0) {
     return;
   }
 
-  const { data: rows } = (await supabase.from(table).select('id, title').in('id', ids)) as {
+  const columns = table === 'templates' ? 'id, title, thumbnail_url' : 'id, title';
+  const { data: rows } = (await supabase.from(table).select(columns).in('id', ids)) as {
     data: TitleRow[] | null;
   };
 
   (rows ?? []).forEach((row) => {
-    titleByTypeAndId.set(`${targetType}:${row.id}`, row.title);
+    infoByTypeAndId.set(`${targetType}:${row.id}`, {
+      title: row.title,
+      thumbnailUrl: row.thumbnail_url,
+    });
   });
 }
 
@@ -83,20 +97,21 @@ export async function getMyBookmarks(userId: string): Promise<MyBookmarkItem[]> 
     .filter((bookmark) => bookmark.target_type === 'feature')
     .map((bookmark) => bookmark.target_id);
 
-  const titleByTypeAndId = new Map<string, string>();
+  const infoByTypeAndId = new Map<string, TitleInfo>();
 
-  await fillTitles(supabase, 'templates', 'template', templateIds, titleByTypeAndId);
-  await fillTitles(supabase, 'features', 'feature', featureIds, titleByTypeAndId);
+  await fillTitles(supabase, 'templates', 'template', templateIds, infoByTypeAndId);
+  await fillTitles(supabase, 'features', 'feature', featureIds, infoByTypeAndId);
 
   return bookmarks.reduce<MyBookmarkItem[]>((items, bookmark) => {
-    const title = titleByTypeAndId.get(`${bookmark.target_type}:${bookmark.target_id}`);
-    if (title === undefined) {
+    const info = infoByTypeAndId.get(`${bookmark.target_type}:${bookmark.target_id}`);
+    if (info === undefined) {
       return items;
     }
     items.push({
       targetType: bookmark.target_type,
       targetId: bookmark.target_id,
-      title,
+      title: info.title,
+      thumbnailUrl: info.thumbnailUrl,
       createdAt: bookmark.created_at,
     });
     return items;

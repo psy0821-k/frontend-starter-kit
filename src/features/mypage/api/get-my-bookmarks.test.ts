@@ -58,8 +58,8 @@ describe('getMyBookmarks', () => {
     });
     const templatesBuilder = createQueryBuilder({
       data: [
-        { id: 't-1', title: '템플릿 하나' },
-        { id: 't-2', title: '템플릿 둘' },
+        { id: 't-1', title: '템플릿 하나', thumbnail_url: 'https://example.com/t-1.png' },
+        { id: 't-2', title: '템플릿 둘', thumbnail_url: 'https://example.com/t-2.png' },
       ],
       error: null,
     });
@@ -85,6 +85,11 @@ describe('getMyBookmarks', () => {
       expect(item).toHaveProperty('createdAt');
     });
     expect(result.map((item) => item.targetId)).toEqual(['t-2', 'f-1', 't-1']);
+
+    const template = result.find((item) => item.targetId === 't-1');
+    const feature = result.find((item) => item.targetId === 'f-1');
+    expect(template?.thumbnailUrl).toBe('https://example.com/t-1.png');
+    expect(feature?.thumbnailUrl).toBeUndefined();
   });
 
   it('should return an empty array when user has no bookmarks', async () => {
