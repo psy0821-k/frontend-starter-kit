@@ -48,3 +48,5 @@ yarn-error.log*
 
 # 개인 확인용 작업 문서 (공유 계획 문서는 plan/prd.md, plan/plan.md만 유지)
 plan/todo-supabase-crud-auth.md
+
+.vercel

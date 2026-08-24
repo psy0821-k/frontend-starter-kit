@@ -3,7 +3,6 @@ import { createSupabaseServerClient } from '@/shared/api/supabase/server';
 import { getCurrentUser } from '@/shared/api/auth/get-current-user';
 import { toErrorResponse } from '@/shared/api/response';
 import { ApiError } from '@/shared/api/error';
-import { FEATURES } from '@/features/feature-catalog/model/data';
 import { BOOKMARK_TARGET_TYPES } from '@/features/bookmark/model/types';
 import type {
   BookmarkState,
@@ -55,7 +54,7 @@ function parseTargetFromBody(body: unknown): BookmarkTarget {
 /**
  * target이 실제로 존재하는지 검증한다.
  *
- * template은 DB(templates 테이블)에, feature는 정적 목록(FEATURES)에 존재해야 한다.
+ * template은 DB(templates 테이블)에, feature는 DB(features 테이블)에 존재해야 한다.
  * bookmarks.target_id는 두 타입을 한 컬럼에 섞어야 해서 FK를 걸 수 없으므로
  * (polymorphic association), 애플리케이션 레벨에서 대신 검증한다.
  */
@@ -64,8 +63,13 @@ async function assertTargetExists(
   target: BookmarkTarget
 ): Promise<void> {
   if (target.targetType === 'feature') {
-    const exists = FEATURES.some((feature) => feature.id === target.targetId);
-    if (!exists) {
+    const { data } = await supabase
+      .from('features')
+      .select('id')
+      .eq('id', target.targetId)
+      .maybeSingle<{ id: string }>();
+
+    if (data === null) {
       throw new ApiError(400, 'VALIDATION_ERROR', '존재하지 않는 feature입니다');
     }
     return;
@@ -170,7 +174,8 @@ export async function DELETE(request: Request): Promise<NextResponse> {
       .from('bookmarks')
       .delete()
       .eq('user_id', user.id)
-      .eq('target_type', target.targetType);
+      .eq('target_type', target.targetType)
+      .eq('target_id', target.targetId);
 
     if (error) {
       throw new ApiError(502, 'UPSTREAM_ERROR', '북마크 해제에 실패했습니다');

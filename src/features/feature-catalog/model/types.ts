@@ -17,6 +17,9 @@ export const FEATURE_CATEGORIES = [
   'comment',
   'payment',
   'notification',
+  'form',
+  'ui',
+  'performance',
 ] as const;
 
 export type FeatureCategory = (typeof FEATURE_CATEGORIES)[number];

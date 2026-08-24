@@ -34,10 +34,6 @@ vi.mock('@/shared/api/supabase/server', () => ({
   createSupabaseServerClient: vi.fn(async () => ({ from })),
 }));
 
-vi.mock('@/features/feature-catalog/model/data', () => ({
-  FEATURES: [{ id: 'search', title: 'Search', description: '', category: 'search' }],
-}));
-
 function createRequest(url: string, method: string, body?: unknown): Request {
   return new Request(url, {
     method,
@@ -52,22 +48,30 @@ function createRequest(url: string, method: string, body?: unknown): Request {
  */
 function mockSupabaseTables(options: {
   templateExists?: boolean;
+  featureExists?: boolean;
   bookmarkExists?: boolean;
   count?: number;
   insertError?: { code: string; message: string } | null;
   deleteError?: { code: string; message: string } | null;
+  eqSpy?: (...args: unknown[]) => void;
 }) {
   const {
     templateExists = true,
+    featureExists = true,
     bookmarkExists = false,
     count = 0,
     insertError = null,
     deleteError = null,
+    eqSpy = vi.fn(),
   } = options;
 
   from.mockImplementation((table: string) => {
     if (table === 'templates') {
       return createQueryBuilder({ data: templateExists ? { id: 'tpl' } : null, error: null });
+    }
+
+    if (table === 'features') {
+      return createQueryBuilder({ data: featureExists ? { id: 'feat' } : null, error: null });
     }
 
     // bookmarks 테이블: select().eq()...(count 응답 또는 maybeSingle 응답), delete().eq().eq()
@@ -77,7 +81,10 @@ function mockSupabaseTables(options: {
 
     const builder: Record<string, unknown> = {
       select: vi.fn(() => builder),
-      eq: vi.fn(() => builder),
+      eq: vi.fn((...args: unknown[]) => {
+        eqSpy(...args);
+        return builder;
+      }),
       insert: vi.fn(() => ({ error: insertError })),
       delete: vi.fn(() => {
         isDeleteChain = true;
@@ -186,8 +193,10 @@ describe('GET /api/bookmarks', () => {
   });
 
   it('targetType이 feature이고 정적 목록에 없는 targetId면 400 VALIDATION_ERROR를 반환한다', async () => {
+    mockSupabaseTables({ featureExists: false });
+
     const request = createRequest(
-      'http://localhost/api/bookmarks?targetType=feature&targetId=nonexistent',
+      'http://localhost/api/bookmarks?targetType=feature&targetId=99999999-9999-9999-9999-999999999999',
       'GET'
     );
     const response = await GET(request);
@@ -287,16 +296,41 @@ describe('POST /api/bookmarks', () => {
 
   it('targetType이 feature이고 정적 목록에 없는 targetId면 400 VALIDATION_ERROR를 반환한다', async () => {
     getCurrentUser.mockResolvedValue({ id: 'user-1', nickname: 'tester' });
+    mockSupabaseTables({ featureExists: false });
 
     const request = createRequest('http://localhost/api/bookmarks', 'POST', {
       targetType: 'feature',
-      targetId: 'nonexistent',
+      targetId: '99999999-9999-9999-9999-999999999999',
     });
     const response = await POST(request);
     const body = (await response.json()) as { success: boolean; error: { code: string } };
 
     expect(response.status).toBe(400);
     expect(body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('targetType이 feature이고 DB에 존재하는 uuid일 때 검증을 통과해야 한다', async () => {
+    getCurrentUser.mockResolvedValue({ id: 'user-1', nickname: 'tester' });
+    mockSupabaseTables({
+      featureExists: true,
+      bookmarkExists: true,
+      count: 1,
+      insertError: null,
+    });
+
+    const request = createRequest('http://localhost/api/bookmarks', 'POST', {
+      targetType: 'feature',
+      targetId: '11111111-1111-1111-1111-111111111111',
+    });
+    const response = await POST(request);
+    const body = (await response.json()) as {
+      success: boolean;
+      data: { isBookmarked: boolean; count: number };
+    };
+
+    expect(response.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.data.isBookmarked).toBe(true);
   });
 
   it('targetType이 template이고 templates 테이블에 존재하지 않는 targetId면 404 NOT_FOUND를 반환한다', async () => {
@@ -336,7 +370,8 @@ describe('POST /api/bookmarks', () => {
 describe('DELETE /api/bookmarks', () => {
   it('북마크된 target을 삭제 요청하면 isBookmarked:false와 count-1을 반환한다', async () => {
     getCurrentUser.mockResolvedValue({ id: 'user-1', nickname: 'tester' });
-    mockSupabaseTables({ bookmarkExists: false, count: 3, deleteError: null });
+    const eqSpy = vi.fn();
+    mockSupabaseTables({ bookmarkExists: false, count: 3, deleteError: null, eqSpy });
 
     const request = createRequest(
       'http://localhost/api/bookmarks?targetType=template&targetId=11111111-1111-1111-1111-111111111111',
@@ -351,6 +386,7 @@ describe('DELETE /api/bookmarks', () => {
     expect(response.status).toBe(200);
     expect(body.data.isBookmarked).toBe(false);
     expect(body.data.count).toBe(3);
+    expect(eqSpy).toHaveBeenCalledWith('target_id', '11111111-1111-1111-1111-111111111111');
   });
 
   it('비로그인 상태로 요청하면 401 AUTH_REQUIRED를 반환한다', async () => {
