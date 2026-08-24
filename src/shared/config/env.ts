@@ -14,9 +14,6 @@ const envSchema = z.object({
   NEXT_PUBLIC_API_BASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1).optional(),
-  // 회원가입 인증 메일 발송(Resend)에 필요. 둘 다 서버 전용이라 클라이언트 번들에 포함되지 않는다.
-  RESEND_API_KEY: z.string().min(1).optional(),
-  SEND_EMAIL_HOOK_SECRET: z.string().min(1).optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
@@ -29,8 +26,6 @@ try {
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    RESEND_API_KEY: process.env.RESEND_API_KEY,
-    SEND_EMAIL_HOOK_SECRET: process.env.SEND_EMAIL_HOOK_SECRET,
     NODE_ENV: process.env.NODE_ENV,
   });
 } catch (error) {
