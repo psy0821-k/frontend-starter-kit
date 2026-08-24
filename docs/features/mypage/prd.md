@@ -23,7 +23,7 @@
 | 영역                                 | 구현 위치                                            | 비고                                                            |
 | ------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------- |
 | 마이페이지 라우트                    | `src/app/mypage/page.tsx` (신규)                     | 서버 컴포넌트, `getCurrentUser()`로 인증 가드                   |
-| 헤더 진입점                          | `src/app/_components/header.tsx` (수정)              | `{닉네임}님` 텍스트를 `<Link href="/mypage">`로 전환            |
+| 헤더 진입점                          | `src/app/_components/header.tsx` (수정)              | 로그인 사용자 메뉴에 "마이페이지" `<Link>` 항목 신규 추가       |
 | **[기능 1] 닉네임 단일 소스화**      | `src/shared/api/auth/get-current-user.ts` (수정)     | `auth.users.user_metadata` 대신 `profiles.nickname` 조회        |
 | **[기능 1] 닉네임 변경 API**         | `src/app/api/mypage/nickname/route.ts` (신규)        | PATCH, `nicknameSchema` + 중복 검사 + `profiles` UPDATE         |
 | **[기능 1] 닉네임 변경 UI**          | `src/features/mypage/ui/nickname-form.tsx` (신규)    | 기존 `check-nickname` 훅(`use-nickname-availability.ts`) 재사용 |

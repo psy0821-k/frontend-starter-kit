@@ -16,7 +16,7 @@
 
 - 위치: `/mypage` — Starter/Template/Feature 3분류에 속하지 않는 최상위 독립 경로(`/auth`와 동급).
 - 비로그인 접근 시: `/auth/login`으로 리다이렉트.
-- 진입점: 헤더(`src/app/_components/header.tsx`)의 `{닉네임}님` 텍스트를 `/mypage`로 가는 `<Link>`로 전환한다(새 UI 요소 추가 없음).
+- 진입점: 헤더(`src/app/_components/header.tsx`)의 로그인 사용자 메뉴 영역에 "마이페이지" 링크를 새 항목으로 추가한다(기존 `{닉네임}님` 텍스트는 그대로 두고, 옆에 별도 링크를 둔다).
 
 ## 사전 정리 — 닉네임 단일 소스화
 

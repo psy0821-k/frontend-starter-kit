@@ -23,8 +23,9 @@ export default async function MyPage(): Promise<JSX.Element>;
 ### 헤더 진입점 — `src/app/_components/header.tsx`
 
 ```typescript
-// 기존: <span>{user.nickname}님</span>
-// 변경: <Link href="/mypage">{user.nickname}님</Link>
+// 기존: <span>{user.nickname}님</span><LogoutButton />
+// 변경: <span>{user.nickname}님</span><Link href="/mypage">마이페이지</Link><LogoutButton />
+// 닉네임 텍스트는 그대로 두고, 로그인 사용자 메뉴 영역에 "마이페이지" 링크를 새 항목으로 추가한다.
 ```
 
 ### 닉네임 변경 Route Handler — `src/app/api/mypage/nickname/route.ts`
@@ -74,14 +75,14 @@ export function NicknameForm(props: NicknameFormProps): JSX.Element;
 
 - `src/shared/api/auth/get-current-user.ts` — `profiles.nickname` 추가 조회로 수정
 - `src/app/mypage/page.tsx` — 신규. 인증 가드 + `NicknameForm` 배치
-- `src/app/_components/header.tsx` — `{닉네임}님`을 `/mypage` 링크로 전환
+- `src/app/_components/header.tsx` — 로그인 사용자 메뉴에 "마이페이지" 링크 신규 추가
 - `src/app/api/mypage/nickname/route.ts` — 신규. PATCH, 중복 검사 + `profiles` UPDATE
 - `src/features/mypage/ui/nickname-form.tsx` — 신규
 - `src/features/mypage/model/schema.ts` — 신규. 기존 `nicknameSchema` re-export 또는 그대로 import
 
 ## Acceptance Criteria
 
-- [ ] Given 로그인한 사용자, When 헤더의 닉네임을 클릭하면, Then `/mypage`로 이동한다.
+- [ ] Given 로그인한 사용자, When 헤더의 "마이페이지" 메뉴 항목을 클릭하면, Then `/mypage`로 이동한다.
 - [ ] Given 비로그인 상태, When `/mypage`에 직접 접근하면, Then `/auth/login`으로 리다이렉트된다.
 - [ ] Given 로그인한 사용자가 마이페이지에 있을 때, When 사용 가능한 새 닉네임을 입력하고 저장하면, Then `profiles.nickname`이 갱신되고 헤더 표시도 새 닉네임으로 바뀐다.
 - [ ] Given 이미 사용 중인 닉네임, When 그 값으로 저장을 시도하면, Then 에러가 표시되고 저장되지 않는다.
