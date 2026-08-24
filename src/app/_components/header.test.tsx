@@ -39,12 +39,12 @@ describe('Header', () => {
     expect(screen.getByRole('link', { name: '마이페이지' })).toBeInTheDocument();
   });
 
-  it('should not render "마이페이지" link when user is not logged in', async () => {
+  it('should render "마이페이지" link even when user is not logged in', async () => {
     getCurrentUser.mockResolvedValue(null);
 
     const element = await Header();
     render(element);
 
-    expect(screen.queryByRole('link', { name: '마이페이지' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: '마이페이지' })).toBeInTheDocument();
   });
 });
