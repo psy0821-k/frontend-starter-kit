@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { renderToStaticMarkup } from 'react-dom/server';
+import type { ReactElement } from 'react';
 
 const verify = vi.fn();
 const send = vi.fn();
@@ -70,9 +72,10 @@ describe('POST /api/auth/send-email', () => {
 
     expect(response.status).toBe(200);
     expect(send).toHaveBeenCalledTimes(1);
-    const [sendArg] = send.mock.calls[0] as [{ to: string[]; html: string }];
+    const [sendArg] = send.mock.calls[0] as [{ to: string[]; react: ReactElement }];
     expect(sendArg.to).toEqual(['user@example.com']);
-    expect(sendArg.html).toContain(
+    const html = renderToStaticMarkup(sendArg.react);
+    expect(html).toContain(
       'http://localhost:3000/api/auth/confirm?token_hash=token-hash-value&amp;type=signup'
     );
   });

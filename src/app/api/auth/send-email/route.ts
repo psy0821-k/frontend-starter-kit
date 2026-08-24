@@ -1,6 +1,5 @@
 import { Webhook } from 'standardwebhooks';
 import { Resend } from 'resend';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { VerificationEmail } from '@/features/auth/ui/verification-email';
 import { env } from '@/shared/config/env';
 
@@ -53,13 +52,12 @@ export async function POST(request: Request): Promise<Response> {
   const confirmUrl = `${site_url}/api/auth/confirm?token_hash=${token_hash}&type=${email_action_type}&redirect_to=${redirect_to}`;
 
   const resend = new Resend(env.RESEND_API_KEY);
-  const html = renderToStaticMarkup(VerificationEmail({ confirmUrl }));
 
   const { error } = await resend.emails.send({
     from: 'Acme <onboarding@resend.dev>',
     to: [email],
     subject: '회원가입 인증 메일',
-    html,
+    react: VerificationEmail({ confirmUrl }),
   });
 
   if (error) {
