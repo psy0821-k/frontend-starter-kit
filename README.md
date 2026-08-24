@@ -22,18 +22,19 @@ npm run dev
 
 ## 📦 기술 스택
 
-| 영역        | 선택                                    | 상태              |
-| ----------- | --------------------------------------- | ----------------- |
-| 프레임워크  | Next.js 15 (App Router)                 | 적용됨            |
-| 언어        | TypeScript                              | 적용됨            |
-| 스타일      | Tailwind CSS 4                          | 적용됨            |
-| UI 컴포넌트 | shadcn/ui (코드 소유 방식)              | 적용됨            |
-| UI 상태     | Zustand                                 | 적용됨            |
-| 폼          | React Hook Form + Zod                   | 적용됨            |
-| 인증/DB     | Supabase (Route Handler 경유 BFF)       | 적용됨            |
-| 린트/훅     | ESLint + Prettier + Husky + lint-staged | 적용됨            |
-| 테스트      | Vitest(유닛) + Playwright(E2E)          | 적용됨            |
-| 서버 상태   | TanStack Query v5                       | 미설치, 계획 확정 |
+| 영역        | 선택                                    | 상태                  |
+| ----------- | --------------------------------------- | --------------------- |
+| 프레임워크  | Next.js 15 (App Router)                 | 적용됨                |
+| 언어        | TypeScript                              | 적용됨                |
+| 스타일      | Tailwind CSS 4                          | 적용됨                |
+| UI 컴포넌트 | shadcn/ui (코드 소유 방식)              | 적용됨                |
+| UI 상태     | Zustand                                 | 적용됨                |
+| 폼          | React Hook Form + Zod                   | 적용됨                |
+| 인증/DB     | Supabase (Route Handler 경유 BFF)       | 적용됨                |
+| 이메일 발송 | Resend (Supabase Custom SMTP 경유)      | 적용됨(도메인 미검증) |
+| 린트/훅     | ESLint + Prettier + Husky + lint-staged | 적용됨                |
+| 테스트      | Vitest(유닛) + Playwright(E2E)          | 적용됨                |
+| 서버 상태   | TanStack Query v5                       | 미설치, 계획 확정     |
 
 ## 📁 프로젝트 구조
 
@@ -132,3 +133,11 @@ npm run start
 
 - **현재 상태**: 기초 구조·린트·훅 설정 완료. `templates`(목록·상세, 카테고리 필터, 색상 대비 검증), `features`(목록) 구현됨. `auth`(Supabase 연동 기반, 회원가입/로그인 UI) 진행 중.
 - **전체 로드맵**: [plan/plan.md §8](plan/plan.md#8-개발-로드맵-7-스프린트--14주)
+
+### ⚠️ 회원가입 이메일 발송 제약 (도메인 미검증)
+
+Supabase 기본(inbuilt) 이메일 발송은 시간당 발송 한도가 매우 낮아(무료 티어), 회원가입 테스트가 곧바로 rate limit에 걸린다. 이를 해결하기 위해 Supabase Dashboard(Authentication > Emails > SMTP Settings)에서 **Custom SMTP로 Resend를 직접 연결**했다(애플리케이션 코드가 아닌 Dashboard 설정 — 관련 시도였던 Send Email Hook 방식은 이 rate limit을 해제하지 못해 폐기함).
+
+다만 아직 **실제 소유 도메인을 Resend에 등록/검증하지 않아**, 발신 주소가 Resend의 sandbox 도메인(`onboarding@resend.dev`)으로 되어 있다. Resend 정책상 이 sandbox 발신 주소는 **Resend 계정 소유자 본인의 이메일 주소로만 발송 가능**하고, 그 외 임의의 이메일로는 발송이 실패한다(`Error sending confirmation email`). 즉 현재는 특정 테스트 계정 외에는 회원가입이 되지 않는 상태다.
+
+**해제 조건**: 도메인을 구매해 Resend에 등록·DNS 검증한 뒤, Supabase SMTP 설정의 Sender email을 그 도메인 주소(예: `noreply@yourdomain.com`)로 변경하면 임의의 사용자가 회원가입할 수 있게 된다.
