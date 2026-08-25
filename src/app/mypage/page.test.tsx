@@ -31,6 +31,10 @@ vi.mock('@/features/mypage/ui/my-bookmark-list', () => ({
   ),
 }));
 
+vi.mock('@/features/mypage/ui/withdraw-dialog', () => ({
+  WithdrawDialog: () => <div data-testid="withdraw-dialog" />,
+}));
+
 afterEach(() => {
   vi.clearAllMocks();
   cleanup();

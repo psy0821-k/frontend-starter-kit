@@ -3,6 +3,7 @@ import { getCurrentUser } from '@/shared/api/auth/get-current-user';
 import { NicknameForm } from '@/features/mypage/ui/nickname-form';
 import { getMyBookmarks } from '@/features/mypage/api/get-my-bookmarks';
 import { MyBookmarkList } from '@/features/mypage/ui/my-bookmark-list';
+import { WithdrawDialog } from '@/features/mypage/ui/withdraw-dialog';
 
 export default async function MyPage() {
   const user = await getCurrentUser();
@@ -18,6 +19,7 @@ export default async function MyPage() {
     <>
       <NicknameForm currentNickname={user.nickname} />
       <MyBookmarkList items={bookmarks} />
+      <WithdrawDialog currentNickname={user.nickname} />
     </>
   );
 }
