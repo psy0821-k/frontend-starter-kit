@@ -35,12 +35,36 @@ afterEach(() => {
   } as unknown as ReturnType<typeof useRouter>);
 });
 
+/** 읽기 모드에서 "편집" 버튼을 눌러 입력 필드를 노출한다. */
+async function startEditing(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: '편집' }));
+}
+
 describe('NicknameForm', () => {
+  it('should render the current nickname as read-only text before editing starts', () => {
+    render(<NicknameForm currentNickname="old-nick" />);
+
+    expect(screen.getByText('old-nick')).toBeInTheDocument();
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '편집' })).toBeInTheDocument();
+  });
+
+  it('should show an input field focused on the current nickname when the edit button is clicked', async () => {
+    const user = userEvent.setup();
+    render(<NicknameForm currentNickname="old-nick" />);
+
+    await startEditing(user);
+
+    const input = screen.getByRole('textbox');
+    expect(input).toHaveValue('old-nick');
+  });
+
   it('should call updateNickname and router.refresh() when a new available nickname is submitted', async () => {
     const user = userEvent.setup();
     mockedUpdateNickname.mockResolvedValue('new-nick');
 
     render(<NicknameForm currentNickname="old-nick" />);
+    await startEditing(user);
 
     const input = screen.getByRole('textbox');
     await user.clear(input);
@@ -55,6 +79,7 @@ describe('NicknameForm', () => {
     const user = userEvent.setup();
 
     render(<NicknameForm currentNickname="old-nick" />);
+    await startEditing(user);
 
     const input = screen.getByRole('textbox');
     await user.clear(input);
@@ -69,6 +94,7 @@ describe('NicknameForm', () => {
     const user = userEvent.setup();
 
     render(<NicknameForm currentNickname="old-nick" />);
+    await startEditing(user);
 
     const input = screen.getByRole('textbox');
     await user.clear(input);
@@ -86,6 +112,7 @@ describe('NicknameForm', () => {
     );
 
     render(<NicknameForm currentNickname="old-nick" />);
+    await startEditing(user);
 
     const input = screen.getByRole('textbox');
     await user.clear(input);
@@ -103,11 +130,28 @@ describe('NicknameForm', () => {
     mockedUseNicknameAvailability.mockReturnValue('available');
 
     render(<NicknameForm currentNickname="old-nick" />);
+    await startEditing(user);
 
     const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, 'new-nick');
 
     expect(screen.getByText('사용 가능한 닉네임입니다')).toBeInTheDocument();
+  });
+
+  it('should return to read-only text without calling updateNickname when the cancel button is clicked', async () => {
+    const user = userEvent.setup();
+
+    render(<NicknameForm currentNickname="old-nick" />);
+    await startEditing(user);
+
+    const input = screen.getByRole('textbox');
+    await user.clear(input);
+    await user.type(input, 'draft-nick');
+    await user.click(screen.getByRole('button', { name: '취소' }));
+
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.getByText('old-nick')).toBeInTheDocument();
+    expect(mockedUpdateNickname).not.toHaveBeenCalled();
   });
 });
