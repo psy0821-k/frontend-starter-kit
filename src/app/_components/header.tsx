@@ -21,8 +21,8 @@ async function Header() {
           <Link href="/features" className={linkClassName}>
             기능
           </Link>
-          <Link href="/about" className={linkClassName}>
-            소개
+          <Link href="/mypage" className={linkClassName}>
+            마이페이지
           </Link>
           {user ? (
             <div className="flex items-center gap-3">

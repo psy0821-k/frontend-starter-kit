@@ -25,7 +25,13 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     return null;
   }
 
-  const nickname = user.user_metadata?.nickname;
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('nickname')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const nickname = profile?.nickname;
 
   return {
     id: user.id,

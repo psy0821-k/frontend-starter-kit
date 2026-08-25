@@ -43,4 +43,23 @@ test.describe('/features/[id] — 상세 페이지', () => {
 
     expect(response.status()).toBe(404);
   });
+
+  test('존재하는 Feature id로 접속하면 북마크 버튼이 화면에 렌더링된다', async ({ page }) => {
+    await page.goto(`/features/${FEATURE_ID}`);
+    await page.waitForLoadState('networkidle');
+
+    const bookmarkButton = page.getByRole('button', { name: /북마크/ });
+
+    await expect(bookmarkButton).toBeVisible();
+  });
+
+  test('비로그인 상태에서 북마크 버튼을 클릭하면 로그인 페이지로 이동한다', async ({ page }) => {
+    await page.goto(`/features/${FEATURE_ID}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByRole('button', { name: '북마크 추가' }).click();
+    await page.waitForURL('**/auth/login');
+
+    expect(page.url()).toContain('/auth/login');
+  });
 });

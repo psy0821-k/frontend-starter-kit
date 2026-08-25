@@ -35,4 +35,20 @@ describe('env', () => {
     expect(env.NEXT_PUBLIC_SUPABASE_URL).toBe('https://example.supabase.co');
     expect(env.NEXT_PUBLIC_SUPABASE_ANON_KEY).toBe('anon-key');
   });
+
+  it('SUPABASE_SERVICE_ROLE_KEY가 미설정(optional)이어도 정상 로드된다', async () => {
+    delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    const { env } = await import('./env');
+
+    expect(env.SUPABASE_SERVICE_ROLE_KEY).toBeUndefined();
+  });
+
+  it('SUPABASE_SERVICE_ROLE_KEY가 설정되면 정상 로드되고 값을 그대로 노출한다', async () => {
+    process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-service-role-key';
+
+    const { env } = await import('./env');
+
+    expect(env.SUPABASE_SERVICE_ROLE_KEY).toBe('test-service-role-key');
+  });
 });
