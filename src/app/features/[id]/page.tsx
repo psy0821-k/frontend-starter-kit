@@ -3,6 +3,9 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { getFeatureById } from '@/features/feature-catalog/api/get-feature-by-id';
 import { StarterKitCodeViewer } from '@/features/starter-kit/ui/starter-kit-code-viewer';
+import { getCurrentUser } from '@/shared/api/auth/get-current-user';
+import { getBookmarkStateForServer } from '@/features/bookmark/api/get-bookmark-state-for-server';
+import { BookmarkButton } from '@/features/bookmark/ui/bookmark-button';
 
 interface FeatureDetailPageProps {
   params: Promise<{ id: string }>;
@@ -25,22 +28,32 @@ export async function generateMetadata({ params }: FeatureDetailPageProps): Prom
  */
 export default async function FeatureDetailPage({ params }: FeatureDetailPageProps) {
   const { id } = await params;
-  const feature = await getFeatureById(id);
+  const [feature, currentUser] = await Promise.all([getFeatureById(id), getCurrentUser()]);
 
   if (feature === null) {
     notFound();
   }
 
+  const bookmarkTarget = { targetType: 'feature' as const, targetId: feature.id };
+  const bookmarkState = await getBookmarkStateForServer(bookmarkTarget, currentUser?.id ?? null);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
       <header className="mb-8 flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="secondary">{feature.category}</Badge>
-          {feature.tags.map((tag) => (
-            <Badge key={tag} variant="outline">
-              {tag}
-            </Badge>
-          ))}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Badge variant="secondary">{feature.category}</Badge>
+            {feature.tags.map((tag) => (
+              <Badge key={tag} variant="outline">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+          <BookmarkButton
+            target={bookmarkTarget}
+            initialData={bookmarkState}
+            isAuthenticated={currentUser !== null}
+          />
         </div>
         <h1 className="text-3xl font-bold">{feature.title}</h1>
         <p className="text-lg text-muted-foreground">{feature.summary}</p>
