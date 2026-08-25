@@ -4,22 +4,29 @@ import type { Feature } from '../model/types';
 
 interface FeatureCardProps {
   feature: Feature;
+  onSelect: (feature: Feature) => void;
 }
 
 /**
- * Feature 목록 카드. 클릭 동작이 없는 정보 표시 전용 카드입니다
- * (상세 페이지 없음 — spec-fixed.md §6 참고).
+ * Feature 목록 카드. 클릭 또는 Enter/Space로 상세 페이지 이동을 트리거합니다
+ * (StarterKitCard와 동일 구조).
  */
-export function FeatureCard({ feature }: FeatureCardProps) {
+export function FeatureCard({ feature, onSelect }: FeatureCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{feature.title}</CardTitle>
-        <CardDescription>{feature.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Badge variant="secondary">{feature.category}</Badge>
-      </CardContent>
-    </Card>
+    <button
+      type="button"
+      onClick={() => onSelect(feature)}
+      className="block w-full cursor-pointer text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>{feature.title}</CardTitle>
+          <CardDescription>{feature.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Badge variant="secondary">{feature.category}</Badge>
+        </CardContent>
+      </Card>
+    </button>
   );
 }
