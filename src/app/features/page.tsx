@@ -11,6 +11,8 @@ import { FeatureFilteredEmptyState } from '@/features/feature-catalog/ui/feature
 import { FeatureList } from '@/features/feature-catalog/ui/feature-list';
 import { FeaturePagination } from '@/features/feature-catalog/ui/feature-pagination';
 import { FeatureSearchInput } from '@/features/feature-catalog/ui/feature-search-input';
+import { getCurrentUser } from '@/shared/api/auth/get-current-user';
+import { getBookmarkedIds } from '@/features/bookmark/api/get-bookmarked-ids';
 
 interface FeaturesPageProps {
   searchParams: Promise<{ category?: string; q?: string; page?: string }>;
@@ -38,7 +40,7 @@ export default async function FeaturesPage({ searchParams }: FeaturesPageProps) 
   const selectedCategory = toFeatureCategoryFilter(category);
   const searchQuery = q ?? '';
 
-  const allFeatures = await getFeatures();
+  const [allFeatures, currentUser] = await Promise.all([getFeatures(), getCurrentUser()]);
 
   if (allFeatures.length === 0) {
     return (
@@ -48,6 +50,8 @@ export default async function FeaturesPage({ searchParams }: FeaturesPageProps) 
       </main>
     );
   }
+
+  const bookmarkedIds = await getBookmarkedIds('feature', currentUser?.id ?? null);
 
   const categoryFiltered = filterFeaturesByCategory(allFeatures, selectedCategory);
   const filteredFeatures = filterFeaturesBySearch(categoryFiltered, searchQuery);
@@ -65,7 +69,11 @@ export default async function FeaturesPage({ searchParams }: FeaturesPageProps) 
         <FeatureFilteredEmptyState />
       ) : (
         <>
-          <FeatureList features={items} />
+          <FeatureList
+            features={items}
+            bookmarkedIds={bookmarkedIds}
+            isAuthenticated={currentUser !== null}
+          />
           <FeaturePagination currentPage={currentPage} totalPages={totalPages} />
         </>
       )}

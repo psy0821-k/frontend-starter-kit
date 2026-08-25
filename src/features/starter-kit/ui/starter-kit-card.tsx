@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { FallbackImage } from '@/shared/ui/fallback-image';
 import { formatDate } from '@/shared/lib/format-date';
+import { ClickableCard } from '@/shared/ui/clickable-card';
+import { BookmarkButton } from '@/features/bookmark/ui/bookmark-button';
 import type { StarterKit } from '../model/types';
 
 const MAX_VISIBLE_TAGS = 3;
@@ -9,13 +11,22 @@ const MAX_VISIBLE_TAGS = 3;
 interface StarterKitCardProps {
   starterKit: StarterKit;
   onSelect: (starterKit: StarterKit) => void;
+  /** 랜딩페이지(StarterKitSection)는 아직 북마크를 지원하지 않아 기본값 false로 둔다. */
+  isBookmarked?: boolean;
+  isAuthenticated?: boolean;
 }
 
 /**
  * 스타터 킷 목록 카드.
- * button 요소로 렌더링해 Tab 포커스, Enter/Space 선택을 브라우저 기본 동작으로 지원합니다.
+ * 내부에 BookmarkButton(버튼)을 포함하므로 button 중첩을 피하기 위해
+ * ClickableCard(role="button" + tabIndex + Enter/Space 처리)로 감쌉니다.
  */
-export function StarterKitCard({ starterKit, onSelect }: StarterKitCardProps) {
+export function StarterKitCard({
+  starterKit,
+  onSelect,
+  isBookmarked = false,
+  isAuthenticated = false,
+}: StarterKitCardProps) {
   const visibleTags = starterKit.tags.slice(0, MAX_VISIBLE_TAGS);
   const hiddenTagCount = starterKit.tags.length - visibleTags.length;
 
@@ -27,11 +38,7 @@ export function StarterKitCard({ starterKit, onSelect }: StarterKitCardProps) {
   const isUpdated = formattedCreatedAt !== formattedUpdatedAt;
 
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(starterKit)}
-      className="block w-full cursor-pointer text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-    >
+    <ClickableCard onSelect={() => onSelect(starterKit)}>
       <Card>
         <FallbackImage
           src={starterKit.thumbnail_url}
@@ -58,8 +65,15 @@ export function StarterKitCard({ starterKit, onSelect }: StarterKitCardProps) {
               {isUpdated ? formattedUpdatedAt : formattedCreatedAt}
             </time>
           </p>
+          <div onClick={(event) => event.stopPropagation()} className="self-start">
+            <BookmarkButton
+              target={{ targetType: 'template', targetId: starterKit.id }}
+              initialData={{ isBookmarked, count: 0 }}
+              isAuthenticated={isAuthenticated}
+            />
+          </div>
         </CardContent>
       </Card>
-    </button>
+    </ClickableCard>
   );
 }
