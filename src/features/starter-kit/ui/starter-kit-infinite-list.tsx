@@ -19,6 +19,8 @@ interface StarterKitInfiniteListProps {
   starterKits: StarterKit[];
   selectedCategory: StarterKitCategoryFilter;
   searchQuery: string;
+  bookmarkedIds: Set<string>;
+  isAuthenticated: boolean;
 }
 
 /**
@@ -29,6 +31,8 @@ export function StarterKitInfiniteList({
   starterKits,
   selectedCategory,
   searchQuery,
+  bookmarkedIds,
+  isAuthenticated,
 }: StarterKitInfiniteListProps) {
   const router = useRouter();
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -98,6 +102,8 @@ export function StarterKitInfiniteList({
             key={kit.id}
             starterKit={kit}
             onSelect={(selected) => router.push(`/templates/${selected.id}`)}
+            isBookmarked={bookmarkedIds.has(kit.id)}
+            isAuthenticated={isAuthenticated}
           />
         ))}
         {isLoadingMore &&

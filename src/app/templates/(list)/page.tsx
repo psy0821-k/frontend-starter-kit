@@ -3,6 +3,8 @@ import { toStarterKitCategoryFilter } from '@/features/starter-kit/model/filter-
 import { StarterKitCategoryFilter } from '@/features/starter-kit/ui/starter-kit-category-filter';
 import { StarterKitInfiniteList } from '@/features/starter-kit/ui/starter-kit-infinite-list';
 import { StarterKitSearchInput } from '@/features/starter-kit/ui/starter-kit-search-input';
+import { getCurrentUser } from '@/shared/api/auth/get-current-user';
+import { getBookmarkedIds } from '@/features/bookmark/api/get-bookmarked-ids';
 
 interface TemplatesPageProps {
   searchParams: Promise<{ category?: string; q?: string }>;
@@ -17,7 +19,8 @@ export default async function TemplatesPage({ searchParams }: TemplatesPageProps
   const selectedCategory = toStarterKitCategoryFilter(category ?? null);
   const searchQuery = q ?? '';
 
-  const starterKits = await getStarterKits();
+  const [starterKits, currentUser] = await Promise.all([getStarterKits(), getCurrentUser()]);
+  const bookmarkedIds = await getBookmarkedIds('template', currentUser?.id ?? null);
   const sortedStarterKits = [...starterKits].sort(
     (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
   );
@@ -38,6 +41,8 @@ export default async function TemplatesPage({ searchParams }: TemplatesPageProps
         starterKits={sortedStarterKits}
         selectedCategory={selectedCategory}
         searchQuery={searchQuery}
+        bookmarkedIds={bookmarkedIds}
+        isAuthenticated={currentUser !== null}
       />
     </main>
   );
