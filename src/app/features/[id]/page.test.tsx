@@ -1,10 +1,23 @@
 // @vitest-environment jsdom
+import type { ReactElement } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import FeatureDetailPage, { generateMetadata } from './page';
 import type { FeatureDetail } from '@/features/feature-catalog/model/types';
 
+/**
+ * BookmarkButton이 useBookmark(TanStack Query)를 쓰므로, 실제 앱(layout.tsx의
+ * QueryProvider)과 동일하게 QueryClientProvider로 감싸서 렌더링한다.
+ */
+function renderPage(page: ReactElement) {
+  const queryClient = new QueryClient();
+  return render(<QueryClientProvider client={queryClient}>{page}</QueryClientProvider>);
+}
+
 const getFeatureById = vi.fn();
+const getCurrentUser = vi.fn();
+const getBookmarkStateForServer = vi.fn();
 const notFound = vi.fn(() => {
   throw new Error('NEXT_NOT_FOUND');
 });
@@ -13,9 +26,23 @@ vi.mock('@/features/feature-catalog/api/get-feature-by-id', () => ({
   getFeatureById: (...args: unknown[]) => getFeatureById(...args),
 }));
 
+vi.mock('@/shared/api/auth/get-current-user', () => ({
+  getCurrentUser: (...args: unknown[]) => getCurrentUser(...args),
+}));
+
+vi.mock('@/features/bookmark/api/get-bookmark-state-for-server', () => ({
+  getBookmarkStateForServer: (...args: unknown[]) => getBookmarkStateForServer(...args),
+}));
+
 vi.mock('next/navigation', () => ({
   notFound: () => notFound(),
+  useRouter: () => ({ push: vi.fn() }),
 }));
+
+beforeEach(() => {
+  getCurrentUser.mockResolvedValue(null);
+  getBookmarkStateForServer.mockResolvedValue({ isBookmarked: false, count: 0 });
+});
 
 afterEach(() => {
   cleanup();
@@ -57,7 +84,7 @@ describe('FeatureDetailPage', () => {
     getFeatureById.mockResolvedValue(baseFeature);
 
     const page = await FeatureDetailPage({ params: Promise.resolve({ id: 'f-1' }) });
-    render(page);
+    renderPage(page);
 
     expect(screen.getByText('검색')).toBeInTheDocument();
     expect(screen.getByText('검색 요약')).toBeInTheDocument();
@@ -72,7 +99,7 @@ describe('FeatureDetailPage', () => {
     getFeatureById.mockResolvedValue({ ...baseFeature, files: [] });
 
     const page = await FeatureDetailPage({ params: Promise.resolve({ id: 'f-1' }) });
-    render(page);
+    renderPage(page);
 
     expect(screen.queryByText('코드')).not.toBeInTheDocument();
   });
@@ -84,7 +111,7 @@ describe('FeatureDetailPage', () => {
     });
 
     const page = await FeatureDetailPage({ params: Promise.resolve({ id: 'f-1' }) });
-    render(page);
+    renderPage(page);
 
     expect(screen.getByText('코드')).toBeInTheDocument();
     expect(screen.getByText('src/index.ts')).toBeInTheDocument();
@@ -97,5 +124,43 @@ describe('FeatureDetailPage', () => {
       'NEXT_NOT_FOUND'
     );
     expect(notFound).toHaveBeenCalled();
+  });
+
+  it('로그인 상태이고 아직 북마크하지 않았을 때 북마크 버튼이 미북마크 상태로 렌더링되어야 한다', async () => {
+    getFeatureById.mockResolvedValue(baseFeature);
+    getCurrentUser.mockResolvedValue({ id: 'user-1' });
+    getBookmarkStateForServer.mockResolvedValue({ isBookmarked: false, count: 0 });
+
+    const page = await FeatureDetailPage({ params: Promise.resolve({ id: 'f-1' }) });
+    renderPage(page);
+
+    const button = screen.getByRole('button', { name: '북마크 추가' });
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('로그인 상태이고 이미 북마크했을 때 북마크 버튼이 북마크됨 상태로 렌더링되어야 한다', async () => {
+    getFeatureById.mockResolvedValue(baseFeature);
+    getCurrentUser.mockResolvedValue({ id: 'user-1' });
+    getBookmarkStateForServer.mockResolvedValue({ isBookmarked: true, count: 1 });
+
+    const page = await FeatureDetailPage({ params: Promise.resolve({ id: 'f-1' }) });
+    renderPage(page);
+
+    const button = screen.getByRole('button', { name: '북마크 해제' });
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('비로그인 상태일 때 북마크 버튼이 렌더링되어야 한다', async () => {
+    getFeatureById.mockResolvedValue(baseFeature);
+    getCurrentUser.mockResolvedValue(null);
+
+    const page = await FeatureDetailPage({ params: Promise.resolve({ id: 'f-1' }) });
+    renderPage(page);
+
+    expect(screen.getByRole('button', { name: '북마크 추가' })).toBeInTheDocument();
+    expect(getBookmarkStateForServer).toHaveBeenCalledWith(
+      { targetType: 'feature', targetId: 'f-1' },
+      null
+    );
   });
 });
