@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,11 +26,14 @@ export interface NicknameFormProps {
 
 /**
  * 마이페이지 닉네임 변경 폼.
- * 입력값이 currentNickname과 동일하면(trim 없이 문자열 그대로 비교)
- * updateNickname을 호출하지 않고 조용히 종료한다.
+ * 기본은 읽기 전용 텍스트로 표시되고, "편집" 버튼을 눌러야 입력 필드로 전환된다.
+ * 입력값이 currentNickname과 동일하면(trim 없이 문자열 그대로 비교) updateNickname을
+ * 호출하지 않고 조용히 종료한다.
  */
 export function NicknameForm({ currentNickname }: NicknameFormProps) {
   const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const form = useAppForm(nicknameFormSchema, {
     mode: 'onChange',
     defaultValues: { nickname: currentNickname },
@@ -38,22 +41,37 @@ export function NicknameForm({ currentNickname }: NicknameFormProps) {
   const {
     register,
     watch,
+    reset,
     formState: { errors, isSubmitting },
   } = form;
+  const { ref: nicknameInputRef, ...nicknameField } = register('nickname');
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const nickname = watch('nickname');
-  const availability = useNicknameAvailability(nickname ?? '');
+  const availability = useNicknameAvailability(isEditing ? (nickname ?? '') : '');
+
+  const startEditing = () => {
+    setIsEditing(true);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  };
+
+  const cancelEditing = () => {
+    reset({ nickname: currentNickname });
+    setSubmitError(null);
+    setIsEditing(false);
+  };
 
   const submitNickname = async (values: NicknameFormValues) => {
     setSubmitError(null);
 
     if (values.nickname === currentNickname) {
+      setIsEditing(false);
       return;
     }
 
     try {
       await updateNickname(values.nickname);
+      setIsEditing(false);
       router.refresh();
     } catch (error) {
       if (error instanceof ApiError) {
@@ -65,6 +83,20 @@ export function NicknameForm({ currentNickname }: NicknameFormProps) {
   };
 
   const handleFormSubmit = form.handleSubmit((values) => submitNickname(values));
+
+  if (!isEditing) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label>닉네임</Label>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm">{currentNickname}</p>
+          <Button type="button" variant="outline" size="sm" onClick={startEditing}>
+            편집
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form
@@ -87,21 +119,30 @@ export function NicknameForm({ currentNickname }: NicknameFormProps) {
           id="nickname"
           aria-invalid={!!errors.nickname}
           aria-describedby={errors.nickname ? 'nickname-error' : undefined}
-          {...register('nickname')}
+          {...nicknameField}
+          ref={(node) => {
+            nicknameInputRef(node);
+            inputRef.current = node;
+          }}
         />
         {errors.nickname && (
           <p id="nickname-error" role="alert" className="text-xs text-destructive">
             {errors.nickname.message}
           </p>
         )}
-        {!errors.nickname && AVAILABILITY_MESSAGE[availability] && (
+        {!errors.nickname && nickname !== currentNickname && AVAILABILITY_MESSAGE[availability] && (
           <p className="text-xs text-muted-foreground">{AVAILABILITY_MESSAGE[availability]}</p>
         )}
       </div>
 
-      <Button type="submit" disabled={isSubmitting} className="w-full">
-        변경
-      </Button>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={isSubmitting} className="flex-1">
+          변경
+        </Button>
+        <Button type="button" variant="outline" onClick={cancelEditing} disabled={isSubmitting}>
+          취소
+        </Button>
+      </div>
     </form>
   );
 }

@@ -78,7 +78,7 @@ export function MyBookmarkList({ items: initialItems }: MyBookmarkListProps) {
   const [removingKeys, setRemovingKeys] = useState<Set<string>>(new Set());
 
   if (items.length === 0) {
-    return <p>아직 북마크한 항목이 없습니다</p>;
+    return <p className="text-sm text-muted-foreground">아직 북마크한 항목이 없습니다</p>;
   }
 
   const handleRemove = async (item: MyBookmarkItem) => {

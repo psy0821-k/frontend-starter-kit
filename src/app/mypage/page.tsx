@@ -16,10 +16,26 @@ export default async function MyPage() {
   const bookmarks = await getMyBookmarks(user.id);
 
   return (
-    <>
-      <NicknameForm currentNickname={user.nickname} />
-      <MyBookmarkList items={bookmarks} />
-      <WithdrawDialog currentNickname={user.nickname} />
-    </>
+    <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+      <h1 className="mb-8 text-3xl font-bold">마이페이지</h1>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-xl font-semibold">계정 정보</h2>
+        <NicknameForm currentNickname={user.nickname} />
+      </section>
+
+      <section className="mb-10">
+        <h2 className="mb-3 text-xl font-semibold">내 북마크</h2>
+        <MyBookmarkList items={bookmarks} />
+      </section>
+
+      <section className="border-t border-border pt-6">
+        <h2 className="mb-3 text-xl font-semibold text-destructive">위험 구역</h2>
+        <p className="mb-3 text-sm text-muted-foreground">
+          계정을 삭제하면 모든 데이터가 영구적으로 제거되며 되돌릴 수 없습니다.
+        </p>
+        <WithdrawDialog currentNickname={user.nickname} />
+      </section>
+    </main>
   );
 }
