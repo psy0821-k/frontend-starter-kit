@@ -1,5 +1,6 @@
 import { HeroWaveBackground } from './hero-wave-background';
 import { LandingDescriptionSection } from './landing-description-section';
+import { LandingVideoSection } from './landing-video-section';
 
 export const LANDING_TITLE = 'Frontend Starter Platform';
 export const LANDING_DESCRIPTION =
@@ -18,6 +19,8 @@ export function LandingPage() {
           {LANDING_TITLE}
         </h1>
       </section>
+
+      <LandingVideoSection />
 
       <LandingDescriptionSection description={LANDING_DESCRIPTION} />
     </>
