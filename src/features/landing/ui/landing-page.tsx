@@ -20,9 +20,8 @@ export function LandingPage() {
         </h1>
       </section>
 
-      <LandingVideoSection />
-
       <LandingDescriptionSection description={LANDING_DESCRIPTION} />
+      <LandingVideoSection />
     </>
   );
 }

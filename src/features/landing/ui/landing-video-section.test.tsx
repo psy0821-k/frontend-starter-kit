@@ -69,6 +69,36 @@ describe('LandingVideoSection', () => {
     expect(video.preload).toBe('none');
   });
 
+  it('비디오 요소가 controls 속성을 가지지 않아야 한다', () => {
+    render(<LandingVideoSection />);
+
+    const video = screen.getByTestId('landing-demo-video') as HTMLVideoElement;
+
+    expect(video.controls).toBe(false);
+  });
+
+  it('webm과 mp4 소스를 모두 포함해야 한다', () => {
+    render(<LandingVideoSection />);
+
+    const video = screen.getByTestId('landing-demo-video') as HTMLVideoElement;
+    const sources = video.querySelectorAll('source');
+
+    expect(sources).toHaveLength(2);
+    expect(sources[0]).toHaveAttribute('src', '/demo.webm');
+    expect(sources[0]).toHaveAttribute('type', 'video/webm');
+    expect(sources[1]).toHaveAttribute('src', '/demo.mp4');
+    expect(sources[1]).toHaveAttribute('type', 'video/mp4');
+  });
+
+  it('의미를 설명하는 aria-label을 가져야 한다', () => {
+    render(<LandingVideoSection />);
+
+    const video = screen.getByTestId('landing-demo-video') as HTMLVideoElement;
+
+    expect(video).toHaveAttribute('aria-label');
+    expect(video.getAttribute('aria-label')).not.toBe('');
+  });
+
   it('비디오 섹션이 뷰포트에 진입하면 play()가 호출되어야 한다', () => {
     render(<LandingVideoSection />);
 
@@ -78,6 +108,14 @@ describe('LandingVideoSection', () => {
     observerInstance.callback([{ isIntersecting: true }]);
 
     expect(video.play).toHaveBeenCalledTimes(1);
+  });
+
+  it('반복 재생을 위해 loop 속성을 가져야 한다', () => {
+    render(<LandingVideoSection />);
+
+    const video = screen.getByTestId('landing-demo-video') as HTMLVideoElement;
+
+    expect(video.loop).toBe(true);
   });
 
   it('prefers-reduced-motion이 reduce일 때 뷰포트에 진입해도 play()가 호출되지 않아야 한다', () => {
@@ -95,13 +133,13 @@ describe('LandingVideoSection', () => {
     expect(video.play).not.toHaveBeenCalled();
   });
 
-  it('prefers-reduced-motion이 reduce일 때 비디오에 controls 속성이 부여되어 수동 재생이 가능해야 한다', () => {
+  it('prefers-reduced-motion이 reduce일 때 loop 속성이 비활성화되어 정지 프레임만 노출해야 한다', () => {
     mockMatchMedia(true);
 
     render(<LandingVideoSection />);
 
     const video = screen.getByTestId('landing-demo-video') as HTMLVideoElement;
 
-    expect(video.controls).toBe(true);
+    expect(video.loop).toBe(false);
   });
 });
