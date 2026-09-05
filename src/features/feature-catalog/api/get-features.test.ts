@@ -8,8 +8,16 @@ vi.mock('@/shared/api/supabase/config', () => ({
   isSupabaseConfigured: (...args: unknown[]) => isSupabaseConfigured(...args),
 }));
 
-vi.mock('@/shared/api/supabase/server', () => ({
-  createSupabaseServerClient: vi.fn(async () => ({ from })),
+vi.mock('@/shared/api/supabase/public', () => ({
+  createSupabasePublicClient: vi.fn(() => ({ from })),
+}));
+
+/**
+ * unstable_cache는 Next.js 요청 컨텍스트(incrementalCache)가 있어야 동작한다.
+ * Vitest 환경에는 이 컨텍스트가 없으므로, 캐싱 없이 콜백을 그대로 호출하도록 대체한다.
+ */
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
 }));
 
 /**
