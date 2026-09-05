@@ -15,7 +15,7 @@ interface LandingDescriptionSectionProps {
  * 히어로 아래 서비스 설명 섹션.
  * 배경 상단을 히어로 웨이브의 마지막 색(#E4E8FF)에서 흰색으로 이어지는
  * 그라디언트로 시작해, 히어로 배경과 이음매 없이 연결되게 한다.
- * 스크롤 진입 시 gsap으로 페이드인 + 위로 슬라이드하며 등장한다.
+ * 스크롤 진행에 맞춰 문장이 연한 회색에서 진한 색으로 물들며 등장한다.
  */
 export function LandingDescriptionSection({ description }: LandingDescriptionSectionProps) {
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -26,27 +26,28 @@ export function LandingDescriptionSection({ description }: LandingDescriptionSec
     }
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const paragraph = sectionRef.current.querySelector('p');
-    if (paragraph === null) {
+    const sentenceEls = sectionRef.current.querySelectorAll('p > span');
+    if (sentenceEls.length === 0) {
       return;
     }
 
     if (prefersReducedMotion) {
-      gsap.set(paragraph, { opacity: 1, y: 0 });
+      gsap.set(sentenceEls, { color: '#0A0A0A' });
       return;
     }
 
     gsap.fromTo(
-      paragraph,
-      { opacity: 0, y: 32 },
+      sentenceEls,
+      { color: '#D1D5DB' },
       {
-        opacity: 1,
-        y: 0,
-        duration: 0.8,
-        ease: 'power2.out',
+        color: '#0A0A0A',
+        stagger: 0.5,
+        ease: 'none',
         scrollTrigger: {
           trigger: sectionRef.current,
           start: 'top 75%',
+          end: 'bottom 60%',
+          scrub: true,
         },
       }
     );
