@@ -13,6 +13,14 @@ vi.mock('@/shared/api/supabase/server', () => ({
 }));
 
 /**
+ * unstable_cache는 Next.js 요청 컨텍스트(incrementalCache)가 있어야 동작한다.
+ * Vitest 환경에는 이 컨텍스트가 없으므로, 캐싱 없이 콜백을 그대로 호출하도록 대체한다.
+ */
+vi.mock('next/cache', () => ({
+  unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+}));
+
+/**
  * Supabase의 PostgrestFilterBuilder를 흉내내는 thenable 빌더.
  * select().order()가 체이닝되다가 await 시점에 resolvedValue로 resolve된다.
  */
