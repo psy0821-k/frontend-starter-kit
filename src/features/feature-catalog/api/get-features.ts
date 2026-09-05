@@ -1,10 +1,10 @@
 import { unstable_cache } from 'next/cache';
-import { createSupabaseServerClient } from '@/shared/api/supabase/server';
+import { createSupabasePublicClient } from '@/shared/api/supabase/public';
 import { isSupabaseConfigured } from '@/shared/api/supabase/config';
 import type { Feature } from '../model/types';
 
 async function fetchFeatures(): Promise<Feature[]> {
-  const supabase = await createSupabaseServerClient();
+  const supabase = createSupabasePublicClient();
 
   const { data, error } = await supabase
     .from('features')

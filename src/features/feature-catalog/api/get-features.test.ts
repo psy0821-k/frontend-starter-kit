@@ -8,8 +8,8 @@ vi.mock('@/shared/api/supabase/config', () => ({
   isSupabaseConfigured: (...args: unknown[]) => isSupabaseConfigured(...args),
 }));
 
-vi.mock('@/shared/api/supabase/server', () => ({
-  createSupabaseServerClient: vi.fn(async () => ({ from })),
+vi.mock('@/shared/api/supabase/public', () => ({
+  createSupabasePublicClient: vi.fn(() => ({ from })),
 }));
 
 /**
