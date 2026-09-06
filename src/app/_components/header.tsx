@@ -1,9 +1,19 @@
 import Link from 'next/link';
 import { getCurrentUser } from '@/shared/api/auth/get-current-user';
 import { LogoutButton } from '@/features/auth/ui/logout-button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
-const linkClassName =
-  'rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+const focusRingClassName =
+  'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+const linkClassName = `rounded-sm ${focusRingClassName}`;
 
 async function Header() {
   const user = await getCurrentUser();
@@ -25,10 +35,26 @@ async function Header() {
             마이페이지
           </Link>
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">{user.nickname}님</span>
-              <LogoutButton />
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    className={`rounded-full ${focusRingClassName}`}
+                    aria-label={`${user.nickname}님 메뉴 열기`}
+                  />
+                }
+              >
+                <Avatar>
+                  <AvatarFallback>{user.nickname.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuLabel>{user.nickname}님</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem nativeButton render={<LogoutButton />} />
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link href="/auth/login" className={linkClassName}>
               로그인
