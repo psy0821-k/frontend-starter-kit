@@ -1,4 +1,5 @@
-import { createSupabaseServerClient } from '@/shared/api/supabase/server';
+import { unstable_cache } from 'next/cache';
+import { createSupabasePublicClient } from '@/shared/api/supabase/public';
 import { isSupabaseConfigured } from '@/shared/api/supabase/config';
 import { MOCK_STARTER_KITS } from './mock-data';
 import type { StarterKit, TemplateFile } from '../model/types';
@@ -11,21 +12,8 @@ type TemplateRow = Omit<StarterKit, 'files'> & {
   template_files: TemplateFile[] | null;
 };
 
-/**
- * 스타터 킷 단건을 파일 목록과 함께 조회합니다.
- *
- * PostgREST 임베딩으로 단일 요청이므로 N+1이 발생하지 않습니다.
- * 찾지 못하면 null을 반환하고, 호출부(상세 페이지)가 notFound()를 호출합니다.
- *
- * Supabase 테이블이 아직 없는 개발 초기에는 mock 데이터로 폴백합니다 —
- * 스키마 적용 전에도 상세 페이지 UI를 확인할 수 있어야 하기 때문입니다.
- */
-export async function getStarterKitById(id: string): Promise<StarterKit | null> {
-  if (!isSupabaseConfigured()) {
-    return findMockStarterKitById(id);
-  }
-
-  const supabase = await createSupabaseServerClient();
+async function fetchStarterKitById(id: string): Promise<StarterKit | null> {
+  const supabase = createSupabasePublicClient();
 
   const { data, error } = await supabase
     .from('templates')
@@ -43,6 +31,36 @@ export async function getStarterKitById(id: string): Promise<StarterKit | null> 
 
   const { template_files, ...template } = data;
   return { ...template, files: template_files ?? [] };
+}
+
+/**
+ * id별로 캐시 키가 갈리도록 keyParts에 id를 포함합니다.
+ * 태그는 목록과 공유해 관리자 CRUD 한 번에 목록·상세가 함께 무효화됩니다.
+ */
+const getCachedStarterKitById = unstable_cache(fetchStarterKitById, ['starter-kit-by-id'], {
+  tags: ['templates'],
+  revalidate: 60,
+});
+
+/**
+ * 스타터 킷 단건을 파일 목록과 함께 조회합니다.
+ *
+ * PostgREST 임베딩으로 단일 요청이므로 N+1이 발생하지 않습니다.
+ * 찾지 못하면 null을 반환하고, 호출부(상세 페이지)가 notFound()를 호출합니다.
+ *
+ * 여러 사용자가 공유하는 참조 데이터라 unstable_cache로 60초간 재사용하며,
+ * 관리자 CRUD 시 revalidateTag('templates')로 목록과 함께 무효화됩니다.
+ * 캐시 스코프 제약으로 쿠키 없는 public 클라이언트를 씁니다(상세는 공개 데이터).
+ *
+ * Supabase 테이블이 아직 없는 개발 초기에는 mock 데이터로 폴백합니다 —
+ * 스키마 적용 전에도 상세 페이지 UI를 확인할 수 있어야 하기 때문입니다.
+ */
+export async function getStarterKitById(id: string): Promise<StarterKit | null> {
+  if (!isSupabaseConfigured()) {
+    return findMockStarterKitById(id);
+  }
+
+  return getCachedStarterKitById(id);
 }
 
 function findMockStarterKitById(id: string): StarterKit | null {

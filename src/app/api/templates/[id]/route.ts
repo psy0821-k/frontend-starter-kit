@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { createSupabaseServerClient } from '@/shared/api/supabase/server';
 import { requireAdmin } from '@/shared/api/auth/require-admin';
 import { toErrorResponse } from '@/shared/api/response';
@@ -52,6 +53,10 @@ export async function PUT(request: Request, context: RouteContext) {
       throw new ApiError(404, 'NOT_FOUND', '템플릿을 찾을 수 없습니다');
     }
 
+    // 목록·상세 조회 캐시(getStarterKits, getStarterKitById)를 즉시 만료시킨다.
+    // 관리자가 CRUD 직후 목록에서 바로 반영을 기대하므로 stale-while-revalidate가 아닌 즉시 만료를 쓴다.
+    revalidateTag('templates', { expire: 0 });
+
     return NextResponse.json({ success: true, data: { id: data as string } });
   } catch (error) {
     return toErrorResponse(error);
@@ -97,6 +102,10 @@ export async function DELETE(_request: Request, context: RouteContext) {
     if (data === null || data.length === 0) {
       throw new ApiError(404, 'NOT_FOUND', '템플릿을 찾을 수 없습니다');
     }
+
+    // 목록·상세 조회 캐시(getStarterKits, getStarterKitById)를 즉시 만료시킨다.
+    // 관리자가 CRUD 직후 목록에서 바로 반영을 기대하므로 stale-while-revalidate가 아닌 즉시 만료를 쓴다.
+    revalidateTag('templates', { expire: 0 });
 
     return NextResponse.json({ success: true, data: null });
   } catch (error) {
